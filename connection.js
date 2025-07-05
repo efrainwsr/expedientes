@@ -7,7 +7,7 @@ const conn = mysql.createPool({
   user: 'root',
   password: 'AJZHqmHKlIzayutXVUbidRXRXxruBgk',
   database: 'expedientes',
-  port: '53237'
+  port: '53237',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
