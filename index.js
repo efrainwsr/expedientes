@@ -44,10 +44,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// ###### INICIAR SERVIDOR ######
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => { // Escuchar en todas las interfaces de red
-  console.log(`server running on port: ${PORT}`);
-});
+// ###### INICIAR SERVIDOR SOLO LOCALMENTE ######
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`server running on port: ${PORT}`);
+  });
+}
 
-module.exports = app;
+// Para Vercel, exporta el handler compatible con serverless
+module.exports = (req, res) => {
+  return app(req, res);
+};
