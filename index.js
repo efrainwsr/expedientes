@@ -45,7 +45,9 @@ app.get('/', (req, res) => {
 });
 
 // ###### INICIAR SERVIDOR ######
-const PORT = process.env.PORT || 3001;
+/*const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => { // Escuchar en todas las interfaces de red
   console.log(`server running on port: ${PORT}`);
-});
+});*/
+
+module.exports = app;
