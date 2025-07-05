@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "pm2 start index.js --watch",
-    "start": "node index"
+    "start": "./index.js"
   },
   "author": "",
   "license": "ISC",
