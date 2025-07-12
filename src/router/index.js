@@ -34,7 +34,7 @@ const routes = [
                 path: '/usuarios',
                 name: 'usuarios',
                 meta: { requiresAuth: true, roles: [0] },
-                component: () => import('@/views/Admin.vue')
+                component: () => import('@/views/Usuarios.vue')
             },
         ]
     },

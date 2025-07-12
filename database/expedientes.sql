@@ -3,14 +3,15 @@ USE expedientes;
 
 CREATE TABLE usuarios(
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    cedula INT UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     pass VARCHAR(255) NOT NULL,
     nombre VARCHAR(25) NOT NULL,
     apellido VARCHAR(25) NOT NULL,
-    rol ENUM('administrador', 'operador', 'consulta') NOT NULL,
+    roles varchar(5) not null,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ultimo_login DATETIME
+    ultimo_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE organismos (

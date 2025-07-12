@@ -22,6 +22,19 @@ export async function dptos(){
     }
 };
 
+export async function getAllUsers(){
+    try {
+        const {data} = await axios.post(`${config.apiBaseUrl}/api/users/getAllUsers`,{},{
+            headers:{
+                'auth-token': localStorage.getItem('token')
+            }
+        });
+        return data;
+    } catch (err) {
+        console.log(err)
+    }
+}
+
 export async function saveUser(user){
     try{    
         const {data} = await axios.post(`${config.apiBaseUrl}/api/users/createUser`,user,{
@@ -32,6 +45,7 @@ export async function saveUser(user){
     return data
 
     }catch(err){
-        //console.log(err)
+        return err.response.data;
+        console.log(err)
     }
 }

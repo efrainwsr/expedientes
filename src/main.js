@@ -1,10 +1,14 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-
-
-
 import PrimeVue from 'primevue/config';
+
+import 'primevue/resources/primevue.min.css';
+import 'primeicons/primeicons.css';
+//import 'primevue/resources/themes/saga-blue/theme.css'; // o el tema que prefieras
+
+
+
 import AutoComplete from 'primevue/autocomplete';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
@@ -194,6 +198,7 @@ app.component('SplitButton', SplitButton);
 app.component('Splitter', Splitter);
 app.component('SplitterPanel', SplitterPanel);
 app.component('Steps', Steps);
+//app.component('Select', Select);
 app.component('TabMenu', TabMenu);
 app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);

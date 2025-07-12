@@ -7,7 +7,7 @@ import {config} from '../../../utils.js'
 
 
 
-const user = ref('rrhh');
+const user = ref('administrador');
 const password = ref('1234');
 const errorMessage = ref('');
 
@@ -28,7 +28,7 @@ const login = async () => {
         // Manejar la respuesta, por ejemplo, almacenar el token en localStorage
         saveToken(res.data.token);
         saveUserInfo(res.data.user)
-        // router.push('/dashboard')
+        //router.push('/dashboard')
         //window.alert(`Bienvenido ${res.data.user.nombre}`)
         router.push('/dashboard');
         //console.log(res)
