@@ -1,30 +1,33 @@
 const conn = require('../connection.js');
 
-async function userExist(data) {
+async function siglasExist(data) {
+  console.log(data, "data de siglasExist")
   try { 
-    const [results, fields] = await conn.execute('SELECT username, id_usuario FROM usuarios WHERE username = ?', [data]);
-    //console.log(results)
-    return results.length > 0 ? {exist: true, id_usuario: results[0].id_usuario} : false;
+    const [results, fields] = await conn.execute('SELECT siglas, id_organismo FROM organismos WHERE siglas = ?', [data]);
+    console.log(results," siglas Exist!" )
+    return results.length > 0 ? {exist: true, id_organismo: results[0].id_organismo} : false;
   } catch (err) {
-    console.error('Error en la consulta de userExist:', err.message);
+    console.error('Error en la consulta de siglasExist:', err.message);
     return { error: true, message: 'Fallo en la conexión a la base de datos' };
   }
 }
 
 
-async function createUser(data) {
+async function createOrg(data) {
+  console.log(data, "data de createOrg")
   try {
-    const [results, fields] = await conn.execute('INSERT INTO usuarios (cedula, username, pass, nombre, apellido, roles, activo) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [data.cedula, data.username, data.pass, data.nombre, data.apellido, data.roles, data.activo]);
+    const [results, fields] = await conn.execute('INSERT INTO organismos (nombre, siglas, activo) VALUES (?, ?, ?)',
+    [data.nombre, data.siglas, data.activo]);
+    console.log(results, "EN CREATE ORG")
     return results;
   } catch (err) {
-    console.error('Error en la consulta de createUser:', err.message);
+    console.error('Error en la consulta de createOrg:', err.message);
     return { error: true, message: err };
   }
 }
 
 
-async function updateUser(data) {
+async function updateOrg(data) {
   console.log(data)
   try {
     if(data.pass){
@@ -44,9 +47,9 @@ async function updateUser(data) {
 
 
 
-async function getAllUsers(){
+async function getAllOrg(){
   try {
-    const [results, fields] = await conn.execute('SELECT id_usuario, username, cedula, nombre, apellido, roles, activo FROM usuarios');
+    const [results, fields] = await conn.execute('SELECT * FROM organismos');
 
   //console.log(results); // results contains rows returned by server
   //console.log(fields); // fields contains extra meta data about results, if available
@@ -69,7 +72,7 @@ async function login(usuario) {
   }
 }*/
 
-module.exports = {getAllUsers, createUser, userExist, updateUser}
+module.exports = {getAllOrg, createOrg, siglasExist, updateOrg}
 
 //createUser();
 

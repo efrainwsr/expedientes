@@ -16,8 +16,8 @@ router.post('/login', async (req, res) => {
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
-  
 
+  
   const userCredentials = await queries.login(req.body.usuario);
   if (userCredentials && userCredentials.error) {
     return res.status(500).json(userCredentials); // Error de conexión a la base de datos
@@ -27,6 +27,16 @@ router.post('/login', async (req, res) => {
   if (!userCredentials) {
     return res.status(400).json({ message: 'Usuario o contraseña incorrecto' });
   }
+
+  //Verificacion de usuarios exixtentes, si existe, no lo crea.
+    const isUserActive = await queries.userActive(req.body.usuario);
+    if (!isUserActive && isUserActive.error) {
+        return res.status(500).json(isUserActive); // Error de conexión a la base de datos
+    }
+    
+    if (!isUserActive) {
+        return res.status(403).json({ error: true, message: 'Usuario inactivo' });
+    }
 
 
   
@@ -68,7 +78,7 @@ router.post('/login', async (req, res) => {
 
 
   res.header('auth-token', token).json({
-    error: null,
+    error: false,
     token: token,
     user: userInfo
 

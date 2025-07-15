@@ -1,13 +1,12 @@
 const router = require('express').Router();
 const Joi = require('@hapi/joi');
-const queries = require('../queries/users.js');
-const bcrypt = require('bcrypt');
+const queries = require('../queries/org.js');
 const jwt = require("jsonwebtoken");
 
 
-router.post('/getAllUsers', async (req, res) => {
+router.post('/getAllOrg', async (req, res) => {
 
-    const result = await queries.getAllUsers();
+    const result = await queries.getAllOrg();
     //console.log(result);
     
     res.json({
@@ -17,21 +16,17 @@ router.post('/getAllUsers', async (req, res) => {
 })
 
 
-router.post('/createUser', async (req, res) =>{
-    const schemaCreateUser = Joi.object({
-        cedula: Joi.number().min(7).required(),
-        username: Joi.string().alphanum().min(3).max(25).required(),
-        pass: Joi.string().min(4).max(1024).required(),
-        nombre: Joi.string().min(3).max(25).required(),
-        apellido: Joi.string().min(3).max(25).required(),
-        roles: Joi.required(),
-        activo: Joi.boolean().required(),
-        //fecha_creacion: Joi.string(),
-        //ultimo_login: Joi.string(),
+router.post('/createOrg', async (req, res) =>{
+    //console.log(req.body, "EN ROUTER CREATEORG")
+    const schemaCreateOrg = Joi.object({
+        nombre: Joi.string().required(),
+        siglas: Joi.string().required(),
+        activo: Joi.boolean().required()
     })
+
     
     //Esta línea utiliza el esquema Joi definido para validar req.body (los datos enviados por el cliente).
-    const { error } = schemaCreateUser.validate(req.body);
+    const { error } = schemaCreateOrg.validate(req.body);
     
     /*Si se encuentra un error (los datos entrantes no coinciden con el esquema), responde 
     estado 400 Bad Request para que no continue con datos no validos*/
@@ -43,35 +38,24 @@ router.post('/createUser', async (req, res) =>{
     }
     
     //Verificacion de usuarios exixtentes, si existe, no lo crea.
-    const userExist = await queries.userExist(req.body.username);
-    if (userExist.exist && userExist.error) {
-        return res.status(500).json(userExist); // Error de conexión a la base de datos
+    const siglasExist = await queries.siglasExist(req.body.siglas);
+    console.log(req.body.siglas)
+    if (siglasExist.exist && siglasExist.error) {
+        return res.status(500).json(siglasExist); // Error de conexión a la base de datos
     }
     
-    if (userExist.exist) {
-        return res.status(400).json({ error: true, message: 'Este usuario ya existe!' });
+    if (siglasExist.exist) {
+        return res.status(400).json({ error: true, message: 'Este organismo ya existe!' });
     }
-    
-    //const userExist = await queries.userExist(req.body.usuario);
-    
-    
-    const salt = await bcrypt.genSalt(10);
-    const password = await bcrypt.hash(req.body.pass, salt);
     
     const data = {
-        cedula: req.body.cedula,
-        username : req.body.username,
-        pass     : password,
-        nombre : req.body.nombre,
-        apellido : req.body.apellido,
-        roles  : req.body.roles,
-        activo: req.body.activo,
-        //fecha_creacion: req.body.fecha_creacion ,
-        ultimo_login: req.body.ultimo_login,
+        nombre: req.body.nombre,
+        siglas: req.body.siglas,
+        activo: req.body.activo
     }
     
 
-    const result = await queries.createUser(data);
+    const result = await queries.createOrg(data);
     res.json({
         error: false,
         data: result

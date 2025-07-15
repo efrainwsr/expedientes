@@ -8,9 +8,10 @@ const app = express();
 
 const corsOptions = {
   origin: '*', // Reemplaza con la URL correcta de tu frontend
+  credentials: true,
   //optionsSuccessStatus: 200 // Opcionalmente personalizar el éxito de la solicitud preflight
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Autohorization']
+  allowedHeaders: ['Content-Type', 'Autohorization', 'auth-token']
 };
 
 app.use(cors(corsOptions));
@@ -22,20 +23,20 @@ app.use(express.json());
 
 
 // ####### IMPORT ROUTES #######
-const userRoutes = require('./routes/users');
-const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users.js');
+const authRoutes = require('./routes/auth.js');
+const orgRoutes = require('./routes/org.js');
 const validToken = require('./routes/middlewares/verify-token.js');
 
-const dptosRoutes = require('./routes/dptos');
 
 
 
 
 
 // ## Route middlewares
-app.use('/api/users'/*,validToken*/, userRoutes);
+app.use('/api/users',validToken, userRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/dptos', validToken, dptosRoutes);
+app.use('/api/org', validToken, orgRoutes);
 
 app.get('/', (req, res) => {
   res.json({

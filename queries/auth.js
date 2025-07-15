@@ -13,6 +13,17 @@ async function login(usuario) {
 }
 
 
+async function userActive(data) {
+  try { 
+    const [results, fields] = await conn.execute('SELECT username FROM usuarios WHERE username = ? and activo = 1', [data]);
+    console.log(results, fields)
+    return results.length > 0 ? true : false;
+  } catch (err) {
+    console.error('Error en la consulta de userActive:', err.message);
+    return { error: true, message: 'Fallo en la conexión a la base de datos' };
+  }
+}
+
 async function updateLastLogin(idUsuario) {
     try {
         const [results] = await conn.execute(
@@ -30,5 +41,6 @@ async function updateLastLogin(idUsuario) {
 
 module.exports = {
   login,
-  updateLastLogin
+  updateLastLogin,
+  userActive
 };
