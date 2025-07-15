@@ -1,7 +1,7 @@
 <template>
     <div class="card">
         <h5>Usuarios registrados</h5>
-        <DataTable v-model:filters="filters" :value="users" paginator showGridlines :rows="10" dataKey="id_usuario"
+        <DataTable size="small" v-model:filters="filters" :value="users" paginator showGridlines :rows="10" dataKey="id_usuario"
             filterDisplay="menu" :loading="loading"
             :globalFilterFields="['username', 'nombre', 'apellido', 'cedula', 'roles', 'activo']">
             
@@ -88,9 +88,9 @@
                 </template>
             </Column>
 
-            <Column field="activo" header="Accion" dataType="text" bodyClass="text-center" style="min-width: 8rem">
+            <Column  field="accion" header="Accion"  bodyClass="text-center" style="min-width: 8rem">
                 <template #body="{ data }">
-                    <Button @click="editarUsuario(data.id_usuario)" class="pi">Editar</Button>
+                    <i  @click="cargarDatosUsuario(data)"  class="edit-button pi pi-file-edit text-yellow-500" ></i>
                 </template>
             </Column>
 
@@ -105,21 +105,19 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-//import IconField from 'primevue/iconfield';
-//import InputIcon from 'primevue/inputicon';
 import Tag from 'primevue/tag';
-//import Select from 'primevue/select';
 import Checkbox from 'primevue/checkbox';
 
 // Importa tu servicio de usuarios
 import { getAllUsers } from '../service/adminService.js';
 
-const users = ref();
+const emit = defineEmits(['cargar-usuario']);
+const users = ref(); //variable que guarda todos los usuarios 
 const filters = ref();
 const loading = ref(false);
 
-const mostrarID = (id) => {
-    console.log(`ID del usuario: ${id}`);
+const cargarDatosUsuario = (data) => {
+    emit('cargar-usuario', data); // Emit the entire 'data' object
 };
 
 // Opciones para el filtro de roles
@@ -209,5 +207,22 @@ defineExpose({
 .p-tag {
     min-width: 6rem; /* Ajusta el ancho mínimo del Tag si es necesario */
     text-align: center;
+}
+
+
+.edit-button {
+    /* Estilos base del botón */
+     /* Un verde amigable */
+
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease; /* Suaviza la transición */
+}
+
+.edit-button:hover {
+    color: white; /* Cambia el color del texto al pasar el mouse */
 }
 </style>

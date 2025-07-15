@@ -1,13 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { dptos, saveUser } from '../service/adminService.js';
+import { ref } from 'vue';
+import { saveUser } from '../service/adminService.js';
 import { fechaActual, imgToBase64, compressImg, validateForm } from '../utils.js';
 import { useToast } from "primevue/usetoast";
 import * as yup from 'yup';
 const toast = useToast();
+//const userDataEdit = ref(null)
 
 /* evento para actualizar la tabla luego de agregar nuevos usuarios*/
 const emit = defineEmits(['user-created']);
+//const userDataEdit = inject('user-Data-Edit'); // Inject the provided user data for editing
+
+//console.log('userDataEdit:', userDataEdit);
 
 const userSchema = yup.object({
   cedula: yup.number().required('La cedula es obligatoria'),
@@ -69,11 +73,11 @@ const sendUser = async () => {
         console.log(data);
       }
 }
-const handleFileUpload = async (event) => {
+/*const handleFileUpload = async (event) => {
   const file = event.files[0];
   const compressedImg = await compressImg(file, 3, 800);
   newUser.value.avatar = await imgToBase64(compressedImg);
-};
+};*/
 </script>
 
 <template>
@@ -83,7 +87,7 @@ const handleFileUpload = async (event) => {
       <div class="p-fluid formgrid grid">
         <div class="field col-12 md:col-4">
           <label for="cedula">Cedula</label>
-          <InputText v-model="newUser.cedula" id="cedula" type="text" :class="{ 'p-invalid': errors.cedula }" />
+          <InputText min="7" max="8" v-model="newUser.cedula" id="cedula" type="text" :class="{ 'p-invalid': errors.cedula }" />
           <small v-if="errors.cedula" class="p-error">{{ errors.cedula }}</small>
         </div>
         <div class="field col-12 md:col-4">
@@ -102,7 +106,7 @@ const handleFileUpload = async (event) => {
           <small v-if="errors.nombre" class="p-error">{{ errors.nombre }}</small>
         </div>
         <div class="field col-12 md:col-4">
-          <label for="apellido">apellido</label>
+          <label for="apellido">Apellido</label>
           <InputText v-model="newUser.apellido" id="apellido" type="text" :class="{ 'p-invalid': errors.apellido }" />
           <small v-if="errors.apellido" class="p-error">{{ errors.apellido }}</small>
         </div>

@@ -5,40 +5,6 @@ import { useLayout } from '@/layout/composables/layout';
 import ItemMenu from '../components/ItemMenu.vue';
 import axios from 'axios'
 
-/*
-  const url = 'https://bcv-api-vnzw.onrender.com/bcv';
-  const urlMenu = 'https://bcv-api-vnzw.onrender.com/menu';
-
-  const bcvPrice = ref(0);
-  const menu = ref(0);
-  const total = ref (0)
-  const totalBs = ref (0)
-  
-   const obtenerBcv = onMounted( async ()=>{
-   const { data } = await axios.get(url);
-   bcvPrice.value = data;
-  })
-
-  const sumarAlTotal = (precio,precioBs) => {
-    total.value += precio;
-    totalBs.value += precioBs; 
-  };
-
-  const restarAlTotal = (precio,precioBs) => {
-    total.value -= precio;
-    totalBs.value -= precioBs; 
-  };
-
-  const borrarCuenta = () =>{
-    total.value=0;
-    totalBs.value=0;
-  };
-
-   const getMenu = onMounted( async ()=>{
-    const { data } = await axios.get(urlMenu);
-    menu.value = data;
-    console.log(menu.value)
-   })*/
 
 const { isDarkTheme } = useLayout();
 const lineOptions = ref(null);
@@ -306,15 +272,6 @@ const detenidoOptions = ref([
 {name: "No", code: 0},
 ]);
 
-const menuModel = ref({
-    name: "",
-    desc: "",
-    price: "",
-    category: null,
-    size: "",
-    status: "",
-    ingredients: ""
-})
 
 
 const buscarCne = async () =>{

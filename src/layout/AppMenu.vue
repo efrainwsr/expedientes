@@ -49,6 +49,11 @@ const model = ref([
             label: 'Bandas',
             icon: 'pi pi-fw pi-users',
             to: '/bandas'
+        },
+        {
+            label: 'Delitos',
+            icon: 'pi pi-fw pi-hammer',
+            to: '/delitos'
         }
         ]
     },

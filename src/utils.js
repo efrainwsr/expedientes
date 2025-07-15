@@ -5,7 +5,7 @@ import * as yup from 'yup';
 export const config = {
     //apiBaseUrl: 'http://10.0.0.239:3001' // Reemplaza con la IP y puerto correctos de la api
     //apiBaseUrl: 'http://localhost:3001'
-      apiBaseUrl: 'http://localhost:3001' // Reemplaza con la IP y puerto correctos de la api
+    apiBaseUrl: 'http://192.168.0.39:3001' // Reemplaza con la IP y puerto correctos de la api
   };
 
 export function fechaActual(){

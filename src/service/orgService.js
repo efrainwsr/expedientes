@@ -1,9 +1,9 @@
 import {config} from '../utils.js'
 import axios from 'axios';
 
-export async function getAllUsers(){
+export async function getAllOrg(){
     try {
-        const {data} = await axios.post(`${config.apiBaseUrl}/api/users/getAllUsers`,{},{
+        const {data} = await axios.post(`${config.apiBaseUrl}/api/org/getAllOrg`,{},{
             headers:{
                 'auth-token': localStorage.getItem('token')
             }
@@ -14,9 +14,9 @@ export async function getAllUsers(){
     }
 }
 
-export async function saveUser(user){
+export async function saveOrg(Org){
     try{    
-        const {data} = await axios.post(`${config.apiBaseUrl}/api/users/createUser`,user,{
+        const {data} = await axios.post(`${config.apiBaseUrl}/api/org/createOrg`,Org,{
             headers:{
                 'auth-token': localStorage.getItem('token')
             }
@@ -29,7 +29,7 @@ export async function saveUser(user){
     }
 }
 
-export async function updateUser(user){
+export async function updateOrg(org){
     try{    
         const {data} = await axios.post(`${config.apiBaseUrl}/api/users/updateUser`,user,{
             headers:{

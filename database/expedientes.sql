@@ -16,8 +16,9 @@ CREATE TABLE usuarios(
 
 CREATE TABLE organismos (
     id_organismo INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
+    nombre VARCHAR(50),
     siglas VARCHAR(25) NOT NULL,
+    status BOOLEAN DEFAULT TRUE,
     logo TEXT  
 );
 
@@ -25,7 +26,14 @@ CREATE TABLE organismos (
 CREATE TABLE bandas (
     id_banda INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50),
-    fecha_registro DATETIME
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE delitos (
+    id_delito INT AUTO_INCREMENT PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    status BOOLEAN DEFAULT TRUE,
 );
 
 CREATE TABLE IF NOT EXISTS ciudades (
