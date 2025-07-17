@@ -33,7 +33,7 @@ CREATE TABLE delitos (
     id_delito INT AUTO_INCREMENT PRIMARY KEY,
     nombre TEXT NOT NULL,
     descripcion TEXT,
-    status BOOLEAN DEFAULT TRUE,
+    status BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS ciudades (
@@ -2118,7 +2118,7 @@ INSERT INTO `parroquias` (`id_parroquia`, `id_municipio`, `parroquia`) VALUES
 
 INSERT INTO `organismos` (`id_organismo`, `nombre`, `siglas`, `logo`, `activo`) VALUES (NULL, 'policia nacional bolivariana', 'PNB', NULL, '1');
 INSERT INTO `organismos` (`id_organismo`, `nombre`, `siglas`, `logo`, `activo`) VALUES (NULL, 'cuerpo de investigaciones cientificas, penales y criminalisticas', 'CICPC', NULL, '1');
-INSERT INTO `usuarios` (`username`, `pass`, `nombre`, `apellido`, `roles`, `activo`) VALUES ('administrador', '$2b$10$kzLpnlN4EFjheV5ngwjQVeg4tOHPdjoROuD5jVohVAKcSHEgIyks2', 'admin', 'admin', '0', true);
+INSERT INTO `usuarios` (`cedula`,`username`, `pass`, `nombre`, `apellido`, `roles`, `activo`) VALUES (27158922, 'administrador', '$2b$10$kzLpnlN4EFjheV5ngwjQVeg4tOHPdjoROuD5jVohVAKcSHEgIyks2', 'admin', 'admin', '0', true);
 
 ALTER TABLE `ciudades`
   ADD CONSTRAINT `ciudades_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estados` (`id_estado`) ON DELETE CASCADE ON UPDATE CASCADE;

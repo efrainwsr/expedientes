@@ -64,41 +64,19 @@ router.post('/createOrg', async (req, res) =>{
 
 
 
-router.post('/updateUser', async (req, res) => {
+router.post('/updateOrg', async (req, res) => {
     try {
         console.log('Datos recibidos:', req.body);
 
-        // Eliminar campo cedula si viene en el request
-        if (req.body.cedula) {
-            delete req.body.cedula;
-            console.log('Campo cedula eliminado del request');
-        }
-
-        // Esquema base común para todos los campos (sin cedula)
-        const baseSchema = {
-            id_usuario: Joi.number().required(),
-            username: Joi.string().alphanum().min(3).max(25).required(),
-            nombre: Joi.string().min(3).max(25).required(),
-            apellido: Joi.string().min(3).max(25).required(),
-            roles: Joi.required(),
+        // Esquema base común para todos los campos
+        const baseSchema = Joi.object({
+            id_organismo: Joi.number().required(),
+            nombre: Joi.string().min(3).max(100).required(),
+            siglas: Joi.string().min(1).max(25).required(),
             activo: Joi.boolean().required()
-        };
+        });
 
-        // Validación condicional
-        let validationSchema;
-        if (req.body.pass && req.body.pass.trim() !== "") {
-            validationSchema = Joi.object({
-                ...baseSchema,
-                pass: Joi.string().min(4).max(1024).required()
-            });
-            console.log("Validando con contraseña");
-        } else {
-            validationSchema = Joi.object(baseSchema);
-            console.log("Validando sin contraseña");
-        }
-
-        // Validar los datos
-        const { error } = validationSchema.validate(req.body);
+        const { error } = baseSchema.validate(req.body);
         if (error) {
             console.log("Error de validación:", error.details[0].message);
             return res.status(400).json({ 
@@ -106,50 +84,42 @@ router.post('/updateUser', async (req, res) => {
             });
         }
 
-        // Verificar si el usuario existe (excepto si es el mismo usuario)
-        const userExist = await queries.userExist(req.body.username);
-        console.log("Resultado de userExist:", userExist);
+        // Verificar si las siglas existen (excepto si son las mismas siglas)
+        const siglasExist = await queries.siglasExist(req.body.siglas);
+        console.log("Resultado de siglasExist:", siglasExist);
         
-        if (userExist && userExist.error) {
-            return res.status(500).json(userExist);
+        if (siglasExist && siglasExist.error) {
+            return res.status(500).json(siglasExist);
         }
         
-        if (userExist.exist && userExist.id_usuario !== req.body.id_usuario) {
+        if (siglasExist.exist && siglasExist.id_organismo !== req.body.id_organismo) {
             return res.status(400).json({ 
                 error: true, 
-                message: 'Este nombre de usuario ya está en uso!' 
+                message: 'Estas siglas ya estan registradas!' 
             });
         }
 
-        // Preparar datos para actualización (sin cedula)
+        // Preparar datos para actualización
         const data = {
-            id_usuario: req.body.id_usuario,
-            username: req.body.username,
+            id_organismo: req.body.id_organismo,
             nombre: req.body.nombre,
-            apellido: req.body.apellido,
-            roles: req.body.roles,
+            siglas: req.body.siglas,
             activo: req.body.activo
         };
 
-        // Solo hashear y agregar contraseña si se proporcionó
-        if (req.body.pass && req.body.pass.trim() !== "") {
-            const salt = await bcrypt.genSalt(10);
-            data.pass = await bcrypt.hash(req.body.pass, salt);
-            console.log("Contraseña hasheada y agregada");
-        }
 
         // Ejecutar actualización
-        const result = await queries.updateUser(data);
+        const result = await queries.updateOrg(data);
         console.log("Resultado de la actualización:", result);
 
         res.json({ 
             error: false, 
             data: result,
-            message: 'Usuario actualizado correctamente'
+            message: 'Organismo actualizado correctamente'
         });
 
     } catch (err) {
-        console.error("Error en updateUser:", err);
+        console.error("Error en updateOrg:", err);
         res.status(500).json({ 
             error: true, 
             message: 'Error interno del servidor',

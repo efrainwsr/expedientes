@@ -28,19 +28,13 @@ async function createOrg(data) {
 
 
 async function updateOrg(data) {
-  console.log(data)
+  console.log("datos en updateOrg", data)
   try {
-    if(data.pass){
-        const [results, fields] = await conn.execute('UPDATE usuarios SET username = ?, pass = ?, nombre = ?, apellido = ?, roles = ?, activo = ? WHERE id_usuario = ?',
-        [data.username, data.pass, data.nombre, data.apellido, data.roles, data.activo, data.id_usuario]);
+        const [results, fields] = await conn.execute('UPDATE organismos SET nombre = ?, siglas = ?, activo = ? WHERE id_organismo = ?',
+        [data.nombre, data.siglas, data.activo, data.id_organismo]);
         return results;
-      }else{
-        const [results, fields] = await conn.execute('UPDATE usuarios SET username = ?, nombre = ?, apellido = ?, roles = ?, activo = ? WHERE id_usuario = ?',
-        [data.username, data.nombre, data.apellido, data.roles, data.activo, data.id_usuario]);
-        return results;
-      }
   } catch (err) {
-    console.error('Error en la consulta de updateUser:', err.message);
+    console.error('Error en la consulta de updateOrg:', err.message);
     return { error: true, message: err };
   }
 }
