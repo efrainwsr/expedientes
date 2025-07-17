@@ -28,10 +28,7 @@ const cerrarModal = () => {
 </script>
 
 <template>
-    <AdminCrearUsuarioFrm
-        @user-created="refreshUserTable"
-        :initialUserData="userToEdit"
-    />
+    <AdminCrearUsuarioFrm @user-created="refreshUserTable" :initialUserData="userToEdit"/>
     <AdminVerUsuariosTable @cargar-usuario="cargarDatosUsuario" ref="userTable" />
     
     <AdminEditUsuario

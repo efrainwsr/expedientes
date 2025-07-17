@@ -51,7 +51,7 @@
 
             <Column  field="accion" header="Accion"  bodyClass="text-center" style="min-width: 8rem">
                 <template #body="{ data }">
-                    <i  @click="cargarDatosUsuario(data)"  class="edit-button pi pi-file-edit text-yellow-500" ></i>
+                    <i  @click="cargarDatosOrg(data)"  class="edit-button pi pi-file-edit text-yellow-500" ></i>
                 </template>
             </Column>
 
@@ -66,20 +66,20 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
 import Checkbox from 'primevue/checkbox';
-import { capitalize } from 'vue';
 
 // Importa tu servicio de usuarios
 import { getAllOrg } from '../service/orgService.js';
 
-const emit = defineEmits(['cargar-usuario']);
+const emit = defineEmits(['cargar-org']);
 const org = ref(); //variable que guarda todos los usuarios 
 const filters = ref();
 const loading = ref(false);
 
-const cargarDatosUsuario = (data) => {
-    emit('cargar-usuario', data); // Emit the entire 'data' object
+
+// emitir evento para abrir el modal y cargar los datos del organismo seleccionado
+const cargarDatosOrg = (data) => {
+    emit('cargar-org', data); // emitir el evento con los datos del organismo a la vista padre
 };
 
 

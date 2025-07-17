@@ -31,7 +31,7 @@ export async function saveOrg(Org){
 
 export async function updateOrg(org){
     try{    
-        const {data} = await axios.post(`${config.apiBaseUrl}/api/users/updateUser`,user,{
+        const {data} = await axios.post(`${config.apiBaseUrl}/api/org/updateOrg`, org,{
             headers:{
                 'auth-token': localStorage.getItem('token')
             }
