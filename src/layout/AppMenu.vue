@@ -52,7 +52,7 @@ const model = ref([
         },
         {
             label: 'Delitos',
-            icon: 'pi pi-fw pi-hammer',
+            icon: 'pi pi-fw pi-calculator',
             to: '/delitos'
         }
         ]

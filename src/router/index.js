@@ -40,6 +40,7 @@ const routes = [
                 path: '/delitos',
                 name: 'delitos',
                 meta: { requiresAuth: true, roles: [0, 1] },
+                component: () => import('@/views/Delitos.vue')
             }
         ]
     },

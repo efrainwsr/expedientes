@@ -4,9 +4,9 @@ import * as yup from 'yup';
 // src/config.js
 export const config = {
     //apiBaseUrl: 'http://10.0.0.239:3001' // Reemplaza con la IP y puerto correctos de la api
-    //apiBaseUrl: 'http://localhost:3001'
+    apiBaseUrl: 'http://192.168.0.39:3001'
     //apiBaseUrl: 'http://localhost:3001' // Reemplaza con la IP y puerto correctos de la api
-    apiBaseUrl: 'https://kbzk6l8x-3001.use2.devtunnels.ms'
+    //apiBaseUrl: 'https://kbzk6l8x-3001.use2.devtunnels.ms'
   };
 
 export function fechaActual(){

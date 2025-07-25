@@ -11,7 +11,7 @@ const modalVisible = ref(false); // Controlamos la visibilidad desde el padre
 
 const refreshOrgTable = () => {
     if (orgTable.value && orgTable.value.refreshOrg) {
-        orgTable.value.refreshOrg();
+        orgTable.value.refreshOrg(); //Funcion en orgTable.vue para obtener los organismos
     }
 };
 
