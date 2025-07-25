@@ -11,13 +11,13 @@ CREATE TABLE usuarios(
     roles varchar(5) not null,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ultimo_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ultimo_login TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE organismos (
     id_organismo INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100),
-    siglas VARCHAR(25) NOT NULL,
+    nombre VARCHAR(255),
+    siglas VARCHAR(50) NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     logo TEXT
 );
@@ -26,14 +26,17 @@ CREATE TABLE organismos (
 CREATE TABLE bandas (
     id_banda INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    descripcion varchar(255),
+    zona varchar(255),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE delitos (
     id_delito INT AUTO_INCREMENT PRIMARY KEY,
     nombre TEXT NOT NULL,
     descripcion TEXT,
-    status BOOLEAN DEFAULT TRUE
+    activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS ciudades (
@@ -81,7 +84,7 @@ CREATE TABLE ciudadano (
     id_municipio int,
     id_parroquia int,
     id_banda int,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     resenador int NOT NULL,
     prefijo_nac VARCHAR(2),
     telefono VARCHAR(20),
@@ -102,8 +105,8 @@ CREATE TABLE delitos_ciudadanos(
     lugar_detencion VARCHAR(200) NOT NULL,
     delitos VARCHAR(250),
     observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAM NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_ciudadano) REFERENCES ciudadano(id_ciudadano),
     FOREIGN KEY (id_organismo) REFERENCES organismos(id_organismo),
     FOREIGN KEY (id_usuario_registro) REFERENCES usuarios(id_usuario)

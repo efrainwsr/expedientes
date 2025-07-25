@@ -26,6 +26,8 @@ app.use(express.json());
 const userRoutes = require('./routes/users.js');
 const authRoutes = require('./routes/auth.js');
 const orgRoutes = require('./routes/org.js');
+const delitosRoutes = require('./routes/delitos.js');
+const bandasRoutes = require('./routes/bandas.js');
 const validToken = require('./routes/middlewares/verify-token.js');
 
 
@@ -37,6 +39,9 @@ const validToken = require('./routes/middlewares/verify-token.js');
 app.use('/api/users',validToken, userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/org', validToken, orgRoutes);
+app.use('/api/delitos', validToken, delitosRoutes);
+app.use('/api/bandas', validToken, bandasRoutes);
+
 
 app.get('/', (req, res) => {
   res.json({
