@@ -78,35 +78,35 @@ CREATE TABLE ciudadano (
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
     alias VARCHAR(100),
-    numero_expediente VARCHAR(30) UNIQUE NOT NULL,
-    fecha_nacimiento DATE,
+    fecha_nacimiento varchar(11),
+    telefono VARCHAR(20),
+    foto TEXT,
+    direccion varchar (255),
     id_estado int,
     id_municipio int,
     id_parroquia int,
     id_banda int,
+    prefijo_nac enum('V', 'E'),
+    sexo enum('M', 'F'),    
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    resenador int NOT NULL,
-    prefijo_nac VARCHAR(2),
-    telefono VARCHAR(20),
-    foto TEXT,
     FOREIGN KEY (id_banda) REFERENCES bandas (id_banda),
     FOREIGN KEY (id_estado) REFERENCES estados (id_estado),
     FOREIGN KEY (id_parroquia) REFERENCES parroquias (id_parroquia),
-    FOREIGN KEY (id_municipio) REFERENCES municipios (id_municipio),
-    FOREIGN KEY (resenador) REFERENCES usuarios (id_usuario)
+    FOREIGN KEY (id_municipio) REFERENCES municipios (id_municipio)
 );
 
 CREATE TABLE delitos_ciudadanos(
     id_expediente INT AUTO_INCREMENT PRIMARY KEY,
+    expediente varchar(50),
     id_ciudadano INT NOT NULL,
     id_usuario_registro INT NOT NULL,
     id_organismo INT NOT NULL,
-    fecha_detencion DATETIME NOT NULL,
+    fecha_detencion VARCHAR(16),
     lugar_detencion VARCHAR(200) NOT NULL,
-    delitos VARCHAR(250),
+    id_delito INT NOT NULL,
     observaciones TEXT,
-    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAM NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_ciudadano) REFERENCES ciudadano(id_ciudadano),
     FOREIGN KEY (id_organismo) REFERENCES organismos(id_organismo),
     FOREIGN KEY (id_usuario_registro) REFERENCES usuarios(id_usuario)
@@ -2122,6 +2122,7 @@ INSERT INTO `parroquias` (`id_parroquia`, `id_municipio`, `parroquia`) VALUES
 INSERT INTO `organismos` (`id_organismo`, `nombre`, `siglas`, `logo`, `activo`) VALUES (NULL, 'policia nacional bolivariana', 'PNB', NULL, '1');
 INSERT INTO `organismos` (`id_organismo`, `nombre`, `siglas`, `logo`, `activo`) VALUES (NULL, 'cuerpo de investigaciones cientificas, penales y criminalisticas', 'CICPC', NULL, '1');
 INSERT INTO `usuarios` (`cedula`,`username`, `pass`, `nombre`, `apellido`, `roles`, `activo`) VALUES (27158922, 'administrador', '$2b$10$kzLpnlN4EFjheV5ngwjQVeg4tOHPdjoROuD5jVohVAKcSHEgIyks2', 'admin', 'admin', '0', true);
+INSERT INTO `bandas` (`id_banda`, `nombre`, `descripcion`, `zona`, `activo`) VALUES (0, 'no pertenece','','','1');
 
 ALTER TABLE `ciudades`
   ADD CONSTRAINT `ciudades_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estados` (`id_estado`) ON DELETE CASCADE ON UPDATE CASCADE;

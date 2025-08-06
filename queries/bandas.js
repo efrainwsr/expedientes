@@ -43,7 +43,7 @@ async function updateBanda(data) {
 
 async function getAllBandas(){
   try {
-    const [results, fields] = await conn.execute('SELECT * FROM bandas');
+    const [results, fields] = await conn.execute('SELECT * FROM bandas WHERE id_banda > 0');
 
   //console.log(results); // results contains rows returned by server
   //console.log(fields); // fields contains extra meta data about results, if available

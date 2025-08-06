@@ -29,6 +29,8 @@ const orgRoutes = require('./routes/org.js');
 const delitosRoutes = require('./routes/delitos.js');
 const bandasRoutes = require('./routes/bandas.js');
 const validToken = require('./routes/middlewares/verify-token.js');
+const ubicacionRoutes = require('./routes/ubicacion.js');
+const ciudadanosRoutes = require('./routes/ciudadanos.js');
 
 
 
@@ -41,6 +43,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/org', validToken, orgRoutes);
 app.use('/api/delitos', validToken, delitosRoutes);
 app.use('/api/bandas', validToken, bandasRoutes);
+app.use('/api/ubicacion', validToken, ubicacionRoutes);
+app.use('/api/ciudadanos', validToken, ciudadanosRoutes);
 
 
 app.get('/', (req, res) => {
