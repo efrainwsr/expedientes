@@ -91,12 +91,11 @@ const sendBanda = async () => {
           <small v-if="errors.activo" class="p-error">{{ errors.activo }}</small>
         </div>
         
-        <div class="field col-12 md:col-3 md:col-offset-4 flex justify-content-center">
+      </div>
+      <div class="field col-12 md:col-3 md:col-offset-4 flex justify-content-center">
           <Button severity="success" label="Guardar" icon="pi pi-check" iconPos="right" @click="sendBanda" />
           <Toast />
         </div>
-        
-      </div>
     </div>
   </div>
 </template>

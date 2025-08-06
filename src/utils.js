@@ -4,8 +4,8 @@ import * as yup from 'yup';
 // src/config.js
 export const config = {
     //apiBaseUrl: 'http://10.0.0.239:3001' // Reemplaza con la IP y puerto correctos de la api
-    apiBaseUrl: 'http://192.168.0.39:3001'
-    //apiBaseUrl: 'http://localhost:3001' // Reemplaza con la IP y puerto correctos de la api
+    //apiBaseUrl: 'http://192.168.0.39:3001' 
+    apiBaseUrl: 'http://localhost:3001' // Reemplaza con la IP y puerto correctos de la api
     //apiBaseUrl: 'https://kbzk6l8x-3001.use2.devtunnels.ms'
   };
 
@@ -60,3 +60,35 @@ export const validateForm = async (schema, formData) => {
       throw err;
   }
 };
+
+export function resizeImage(file, maxWidth = 720, maxHeight = 720, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new window.Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round((maxWidth / width) * height);
+                    width = maxWidth;
+                }
+                if (height > maxHeight) {
+                    width = Math.round((maxHeight / height) * width);
+                    height = maxHeight;
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(dataUrl);
+            };
+            img.onerror = reject;
+            img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}

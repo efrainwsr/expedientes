@@ -1,10 +1,24 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
-import ProductService from '@/service/ProductService';
+import { onMounted, ref, watch } from 'vue';
+import Calendar from 'primevue/calendar';
 import { useLayout } from '@/layout/composables/layout';
-import ItemMenu from '../components/ItemMenu.vue';
-import axios from 'axios'
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
+const personIcon = ('src/assets/person-icon.svg');
+import * as yup from 'yup';
+import {config, validateForm, resizeImage} from '../utils.js'
 
+import { getCurrentInstance } from 'vue';
+const fileupload = ref(null);
+
+import Buscador from '../components/Buscador.vue';
+import { saveCiudadano, buscarCiudadano, saveDelitoCiudadano, getDelitosCiudadano } from '../service/ciudadanoService.js';
+import { getAllDelitos } from '../service/delitosService.js';
+import { getEstados, getMunicipios, getParroquias } from '../service/ubicacionService.js';
+import { getAllBandas } from '../service/bandasService.js';
+import { getAllOrg } from '../service/orgService.js';
+const modalVisible = ref(false);
+const ciudadanoEncontrado = ref(false);
 
 const { isDarkTheme } = useLayout();
 const lineOptions = ref(null);
@@ -69,208 +83,137 @@ const applyDarkTheme = () => {
 };
 
 watch(
-    isDarkTheme,
-    (val) => {
-        if (val) {
-            applyDarkTheme();
-        } else {
-            applyLightTheme();
-        }
-    },
-    { immediate: true }
+isDarkTheme,
+(val) => {
+    if (val) {
+        applyDarkTheme();
+    } else {
+        applyLightTheme();
+    }
+},
+{ immediate: true }
 );
 
 
-const rutaFotos = "../../public/"
+const delitosCiudadano = ref([]);
 
-    var listaCiudadanos = [
-  {
-    "id": "001",
-    "cedula": "12345678",
-    "nombres": "Juan",
-    "apellidos": "Pérez Rodríguez",
-    "fecha_nacimiento": "1985-03-15",
-    "estado_pais": {"name": "Zulia", "code": 3} ,
-    "ciudad": "Maracaibo",
-    "municipio": "Maracaibo",
-    "parroquia": "Chiquinquirá",
-    "direccion": "Av. 5 de Julio, Edif. El Sol, Apto. 3B",
-    "celular": "0414-1234567",
-    "detenido": 1,
-    "delitos": ["Robo a mano armada", "Lesiones personales"],
-    "foto": "1.jpg"
-  },
-  {
-    "id": "002",
-    "cedula": "23456789",
-    "nombres": "María",
-    "apellidos": "González Sánchez",
-    "fecha_nacimiento": "1990-11-22",
-    "estado_pais": {"name": "Bolivar", "code": "1"},
-    "ciudad": "Valencia",
-    "municipio": "Valencia",
-    "parroquia": "San Blas",
-    "direccion": "Calle 100, Nro. 5-10, Urb. La Isabelica",
-    "celular": "0426-9876543",
-    "detenido": 0,
-    "delitos": "Tráfico de drogas",
-    "foto": "3.jpg"
-  },
-  {
-    "id": "003",
-    "cedula": "34567890",
-    "nombres": "Pedro",
-    "apellidos": "Hernández López",
-    "fecha_nacimiento": "1978-07-01",
-    "estado_pais": "Miranda",
-    "ciudad": "Guarenas",
-    "municipio": "Plaza",
-    "parroquia": "Guarenas",
-    "direccion": "Sector 1, Mz. 4, Casa 12, Urb. El Samán",
-    "celular": "0412-3456789",
-    "detenido": 1,
-    "delitos": "Tráfico de drogas, Asociación para delinquir",
-    "foto": "2.jpg"
-  },
-  {
-    "id": "004",
-    "cedula": "10987654",
-    "nombres": "Ana",
-    "apellidos": "Ramírez Vargas",
-    "fecha_nacimiento": "1995-01-08",
-    "estado_pais": "Lara",
-    "ciudad": "Barquisimeto",
-    "municipio": "Iribarren",
-    "parroquia": "Concepción",
-    "direccion": "Carrera 19, entre Calles 25 y 26, Edif. Sol Naciente, Apto. 2A",
-    "celular": "0416-7654321",
-    "detenido": 0,
-    "delitos": [],
-    "foto": "3.jpg"
-  },
-  {
-    "id": "005",
-    "cedula": "21098765",
-    "nombres": "Luis",
-    "apellidos": "Morales Castro",
-    "fecha_nacimiento": "1980-09-30",
-    "estado_pais": "Bolívar",
-    "ciudad": "Ciudad Guayana",
-    "municipio": "Caroní",
-    "parroquia": "Unare",
-    "direccion": "Vereda 2, Manzana 15, Casa 7, Urb. Villa Brasil",
-    "celular": "0424-5432109",
-    "detenido": 1,
-    "delitos": "Homicidio calificado, Porte ilícito de arma de fuego",
-    "foto": "1.jpg"
-  },
-  {
-    "id": "006",
-    "cedula": "32109876",
-    "nombres": "Sofía",
-    "apellidos": "Díaz Rojas",
-    "fecha_nacimiento": "1992-04-12",
-    "estado_pais": "Aragua",
-    "ciudad": "Maracay",
-    "municipio": "Girardot",
-    "parroquia": "Las Delicias",
-    "direccion": "Av. Las Delicias, C.C. Parque Aragua, Local 15",
-    "celular": "0414-2109876",
-    "detenido": 0,
-    "delitos": "Secuestro",
-    "foto": "2.jpg"
-  },
-  {
-    "id": "007",
-    "cedula": "10111213",
-    "nombres": "Carlos",
-    "apellidos": "Blanco Vera",
-    "fecha_nacimiento": "1988-02-28",
-    "estado_pais": "Anzoátegui",
-    "ciudad": "Puerto La Cruz",
-    "municipio": "Sotillo",
-    "parroquia": "Puerto La Cruz",
-    "direccion": "Calle Freites, Residencias Marina, Piso 4, Apto. 8",
-    "celular": "0416-3210987",
-    "detenido": 1,
-    "delitos": "Extorsión, Secuestro",
-    "foto": "3.jpg"
-  },
-  {
-    "id": "008",
-    "cedula": "20223344",
-    "nombres": "Laura",
-    "apellidos": "Gómez Silva",
-    "fecha_nacimiento": "1998-06-05",
-    "estado_pais": "Mérida",
-    "ciudad": "Mérida",
-    "municipio": "Libertador",
-    "parroquia": "El Llano",
-    "direccion": "Av. 3, entre Calles 20 y 21, Casa Nro. 3-45",
-    "celular": "0426-4321098",
-    "detenido": 0,
-    "delitos": "Secuestro",
-    "foto": "2.jpg"
-  },
-  {
-    "id": "009",
-    "cedula": "30334455",
-    "nombres": "Diego",
-    "apellidos": "Ferrer Rivas",
-    "fecha_nacimiento": "1975-10-10",
-    "estado_pais": "Nueva Esparta",
-    "ciudad": "Porlamar",
-    "municipio": "Mariño",
-    "parroquia": "Mariño",
-    "direccion": "Av. 4 de Mayo, C.C. Costazul, Local 123",
-    "celular": "0412-5432109",
-    "detenido": 1,
-    "delitos": "Fraude",
-    "foto": "1.jpg"
-  },
-  {
-    "id": "010",
-    "cedula": "11223344",
-    "nombres": "Gabriela",
-    "apellidos": "Soto Aguilar",
-    "fecha_nacimiento": "1993-12-25",
-    "estado_pais": "Falcón",
-    "ciudad": "Punto Fijo",
-    "municipio": "Carirubana",
-    "parroquia": "Carirubana",
-    "direccion": "Calle Mariño, entre Girardot y Ayacucho, Casa Nro. 10",
-    "celular": "0414-6543210",
-    "detenido": 0,
-    "delitos": "Estafa",
-    "foto": "3.jpg"
-  }
-]
+
+const errors = ref({});
+const errorsModal = ref({});
+
+const sexoOptions = ref([
+{name: "Masculino", code: 'M'},
+{name: "Femenino", code: 'F'},
+]);
+
+const estadoOptions = ref([]);
+const municipioOptions = ref([]) 
+const parroquiaOptions = ref([]) 
+const delitosOptions = ref([]);
+const organismoOptions = ref([]);
+
+
+const nacOptions = ref([  
+{name: "Venezolano", code: 'V' },
+{name: "Extranjero", code: 'E'},
+])
+
+const bandaOptions = ref([
+{name: "No pertenece", code: 0},
+]);
 
 const isDisabled = ref(false);
+const cedulaDisabled = ref(false);
 
-const categoryItems = ref([]);
-/*const estadosItems = ref([
-{ name: 'Bolivar', code: '1' },
-{ name: 'Anzoategui', code: '2' },
-{ name: 'Zulia', code: '3' },
-{ name: 'Portuguesa', code: '4' },
-{ name: 'Nueva esparta', code: '5' }
-]);*/
+const ciudadanoSchema = yup.object({
+    cedula: yup.string().max(8).required('La cédula es obligatoria'),
+    nombres: yup.string().max(255).required('El nombre es obligatorio'),
+    apellidos: yup.string().max(255).required('El nombre es obligatorio'),
+    alias: yup.string().max(50),
+    prefijo_nac: yup.string().max(1).required('La nacionalidad es obligatoria'),
+    fecha_nacimiento: yup.string().required('La fecha de nacimiento es obligatoria'),
+    sexo: yup.string().max(1).required('El sexo es obligatorio'),
+    telefono: yup.string().max(15).required('El teléfono es obligatorio'),
+    id_banda: yup.number().required('La banda es obligatoria'),
+    id_estado: yup.number().required('El estado es obligatorio'),
+    id_municipio: yup.number().required('El municipio es obligatorio'),
+    id_parroquia: yup.number().required('La parroquia es obligatoria'),
+    direccion: yup.string().max(255).required('La dirección es obligatoria'),
+    foto: yup.string().optional(),
+});
 
-const estadosItems = ref([]);
+const delitosSchema = yup.object({
+    id_ciudadano: yup.number(),
+    expediente: yup.string().max(50),
+    id_usuario_registro: yup.number(),
+    id_organismo: yup.number().required('Seleccione un organismo aprehensor'),
+    fecha_detencion: yup.string().required('Fecha de detención es obligatoria'),
+    lugar_detencion: yup.string().max(255),
+    id_delito: yup.number().required('Seleccione un delito'),
+    observaciones: yup.string().max(255)
+});
 
+onMounted( async () => {
+    const orgs = await getAllOrg();    
+    organismoOptions.value = [];
+    orgs.data.forEach(org => {
+        organismoOptions.value.push({
+            name: org.siglas,
+            code: org.id_organismo
+        });
+    });
+});
+onMounted( async () => {
+    const bandas = await getAllBandas();    
+    bandaOptions.value = [];
+    bandas.data.forEach(banda => {
+        bandaOptions.value.push({
+            name: banda.nombre,
+            code: banda.id_banda
+        });
+    });
+});
+onMounted( async () => {
+    const estados = await getEstados();
+    estados.data.forEach(estado => {
+        estadoOptions.value.push({
+            name: estado.estado,
+            code: estado.id_estado
+        });
+    });
+});
+onMounted(() => {
+    getAllDelitos().then((data) => {
+        delitosOptions.value = [];
+        data.data.forEach(delito => {
+            delitosOptions.value.push({
+                name: delito.nombre,
+                code: delito.id_delito
+            });
+        });
+    });
+});
+const buscarMunicipio = async (event) => {
+    const data = await getMunicipios(event.value);    
+    municipioOptions.value = [];
+    data.data.forEach(municipio => {
+        municipioOptions.value.push({
+            name: municipio.municipio,
+            code: municipio.id_municipio
+        });
+    });  
+};
+const buscarParroquia = async (event) => {
+    const data = await getParroquias(event.value);    
+    parroquiaOptions.value = [];
+    data.data.forEach(parroquia => {
+        parroquiaOptions.value.push({
+            name: parroquia.parroquia,
+            code: parroquia.id_parroquia
+        });
+    });  
+};
 
-const sizeItems = ref([]);
-
-const statusItems = ref([
-{name: "Disponible"},
-{name: "No Disponible"},
-]);
-
-const detenidoOptions = ref([
-{name: "Si", code: 1},
-{name: "No", code: 0},
-]);
 
 
 
@@ -279,102 +222,84 @@ const buscarCne = async () =>{
     console.log(res.json())
 }
 
-const cedulaBuscar = ref('12345678');
+const buscar = {cedula: 27158922, nombre: '', expediente: ''};
+
 
 const ciudadanoModel = ref(
 {
-    id: "",
-    cedula: "",
-    nombres: "",
-    apellidos: "",
-    fecha_nacimiento: "",
-    estado_pais: [{}],
-    ciudad: "",
-    municipio: "",
-    parroquia: "",
-    direccion: "",
-    celular: "",
-    detenido: [{}],
-    delitos: "",
-    foto: ""
+    cedula: null, nombres: "", apellidos: "", alias: "", prefijo_nac: "", fecha_nacimiento: "",
+    sexo: "", telefono: "", id_banda: null, id_estado: null, id_municipio: null,
+    id_parroquia: null, direccion: "", foto: ""
 }
 );
 
+const resenador = JSON.parse(localStorage.getItem('user'))
 
+const delitoModel = ref(
+{
+    expediente: "",
+    id_ciudadano: null,
+    id_usuario_registro: resenador.id,
+    id_organismo: null,
+    fecha_detencion: "",
+    lugar_detencion: "",
+    id_delito: null,
+    observaciones: "",
+}
+);
 
+/*
+const ciudadanoModel = ref(
+{
+cedula: 27158922, nombres: "efrain jose", apellidos: "figueredo barreto", alias: "negrito", nac: "V", fecha_nac: "22/01/1998", sexo: "M", telefono: "04129491621", banda: 0, estado: 6, municipio: 66,
+parroquia: 214, direccion: "core 8", foto: ""
+}
+);*/
 
-const clearMenuModel = () => {
-    menuModel.value = {
-        name: "",
-        desc: "",
-        price: "",
-        category: null,
-        size: "",
-        status: "",
-        ingredients: ""
-    };
-};
-
-//  CONSULTAR CATERGORIAS
-/*onMounted(async () => {
-    const query = await getDocs(collection(db, "categories"));
-    const data = query.docs.map((doc) =>{
-        return {id: doc.id, ...doc.data()};
-    });
-    categoryItems.value = data;
-    console.log(data)
-});*/
-
-
-//CONSULTAR TAMAÑOS
-/*onMounted(async () => {
-    const query = await getDocs(collection(db, "sizes"));
-    const data = query.docs.map((doc) =>{
-        return {...doc.data()};
-    });
-    sizeItems.value = data;
-    //console.log(data)
-}); */
-
-/*onMounted(async () => {
-    try {
-        const res = await fetch('src/assets/venezuela.json');
-        if (!res.ok) { // Always check if the response was successful
-            throw new Error(`HTTP error! status: ${res.status}`);
+const buscarCiudadanos = async (cedula) => {
+    if(cedula){
+        const data = await buscarCiudadano(cedula);
+        //console.log(data, "data buscarCiudadano");
+        
+        if(data.data === false){
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el ciudadano.', life: 3000 });
+            return;
         }
-        estadosItems.value = await res.json(); // Await the res.json() promise
-        console.log(estadosItems.value);
-    } catch (error) {
-        console.error("Error al cargar los estados:", error);
-        // You might want to handle this error in the UI, e.g., show a message
+        
+        if(data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
+            return;
+        }
+        
+        ciudadanoModel.value = data.data[0];
+        delitoModel.value.id_ciudadano = data.data[0].id_ciudadano
+        cedulaDisabled.value = true;
+        ciudadanoEncontrado.value = true;
+        isDisabled.value = true;
+        
+        const resDelitos = await getDelitosCiudadano(data.data[0].id_ciudadano);
+        delitosCiudadano.value = resDelitos.data;
+        delitosCiudadano.value.forEach(delito => {
+            delito.fecha_detencion = new Date(delito.fecha_detencion).toLocaleDateString('es-VE');
+        });  
+        
+    }else{
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
+        return;
     }
-});*/
+}
 
 
-
-const reglasValidacion = {
-    cedula: { required: true, tipo: 'string' },
-};
-
-const validateForm = () => {
-    const requiredFields = ['buscarCiudadano'];
-    
-    let val = validateFields(cedulaBuscar.value, requiredFields)
-    return val;
-};
-
-
-
-const buscarCiudadano = async (e) => {
+const buscarNombre = async (valor) => {
     
     //const res = await fetch('demo/data/ciudadanos.json');
     const ciudadanoData =  listaCiudadanos;//await res.json();
-    console.log(ciudadanoData)
+    
     //busquedaRealizada.value = true; // Indicamos que se ha iniciado una búsqueda
-    const cedulaNormalizada = cedulaBuscar.value.trim().toUpperCase(); // Normalizamos la cédula para una búsqueda precisa
+    const nombreNormalizado = valor.trim().toUpperCase(); // Normalizamos la cédula para una búsqueda precisa
     // Usamos el método .find() para buscar el ciudadano por su cédula
     const encontrado = ciudadanoData.find(
-    (ciudadano) => ciudadano.cedula.toUpperCase() === cedulaNormalizada
+    (ciudadano) => ciudadano.nombres.toUpperCase() === nombreNormalizado
     );
     // Asignamos el resultado a la referencia reactiva
     if (encontrado) {
@@ -383,303 +308,361 @@ const buscarCiudadano = async (e) => {
         console.log("Ciudadano encontrado:", JSON.parse(JSON.stringify(encontrado)));
     } else {
         ciudadanoModel.value = null; // Si no se encuentra, limpiamos el valor anterior
-        console.log(`No se encontró ningún ciudadano con la cédula: ${cedulaNormalizada}`);
+        console.log(`No se encontró ningún ciudadano con la cédula: ${nombreNormalizado}`);
     }
 };
 
-const guardarCiudadano = async () => {
-    ciudadanoModel.value.id = listaCiudadanos.length
+// Captura y convierte la imagen seleccionada en base64 usando la referencia de FileUpload
+const upload = async () => {
+    // Usar la referencia de FileUpload para obtener el archivo
+    const files = fileupload.value && fileupload.value.files ? fileupload.value.files : [];
+    if (files.length > 0) {
+        const file = files[0];
+        try {
+            const resizedBase64 = await resizeImage(file, 900, 900, 0.7); // Puedes ajustar tamaño/calidad
+            ciudadanoModel.value.foto = resizedBase64;
+            toast.add({ severity: 'info', summary: 'Operacion exitosa', detail: 'Foto subida.', life: 3000 }); 
+        } catch (err) {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo reducir la imagen.', life: 3000 });
+        }
+    } else {
+        // Si no hay imagen, simplemente no se asigna nada y no se muestra error
+        ciudadanoModel.value.foto = null;
+        toast.add({ severity: 'info', summary: 'Sin foto', detail: 'No se subió ninguna imagen. El registro se guardará sin foto.', life: 3000 });
+    }
+};
 
-    const plainCiudadano = JSON.parse(JSON.stringify(ciudadanoModel.value));
-    listaCiudadanos.push(plainCiudadano)
-    console.log(listaCiudadanos)
+const sendCiudadano = async () => {
+    const validationResult = await validateForm(ciudadanoSchema, ciudadanoModel.value);
+    if (!validationResult.isValid) {
+        errors.value = validationResult.errors;
+    } else {
+        errors.value = {};
+        // Continuar con el envío del formulario si es válido
+        const data = await saveCiudadano(ciudadanoModel.value);
+        //console.log(ciudadanoModel.value, "funcion serndCiudadano ");
+        if(data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
+            return;
+        }else if(data.data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.data.message.message, life: 3000 });
+            return
+        }else{
+            toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Ciudadano registrado.', life: 3000 });
+            ciudadanoModel.value = {
+                nombre: "", descripcion: "", activo: true
+            };
+            //emit('delito-created');
+        }
+        //console.log(data);
+    }
+}
+
+const sendDelito = async () => {
+    console.log(delitoModel.value, "funcion sendDelito");
+    const validationResult = await validateForm(delitosSchema, delitoModel.value);
+    if (!validationResult.isValid) {
+        errorsModal.value = validationResult.errors;
+    } else {
+        errorsModal.value = {};
+        console.log(delitoModel.value, "funcion sendDelito");
+        // Continuar con el envío del formulario si es válido
+        const data = await saveDelitoCiudadano(delitoModel.value);
+        //console.log(ciudadanoModel.value, "funcion serndCiudadano ");
+        
+        if(data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
+            return;
+        }else if(data.data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.data.message.message, life: 3000 });
+            return
+        }else{
+            toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Delito registrado.', life: 3000 });
+            delitoModel.value = {};
+            //emit('delito-created');
+        }
+        //console.log(data);
+    }
 }
 
 
-// Add a new document in collection "menu"
-const saveMenuItem = async (e)=>{
-    
-    if(validateForm(menuModel.value, )==true){ 
-        const categoryId = menuModel.value.category.id;
-        const sizeName = menuModel.value.size.name;
-        const statusName = menuModel.value.status.name;
-        menuModel.value.status = statusName;
-        menuModel.value.category = categoryId;
-        menuModel.value.size = sizeName;
-        menuModel.value.price = parseFloat(menuModel.value.price);
-        
-        //const saveDoc = await addDoc(collection(db, "menu"), menuModel.value );
-        //clearMenuModel();
-        //console.log("Document written with ID: ", saveDoc.id);
-        toast.add({ severity: 'success', summary: 'Exito', detail: 'Los datos se han guardado.', life: 3000 });
-    }else{
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Por favor, complete todos los campos.', life: 3000 });
-    }
-}; 
+
+
 
 
 </script>
 
 <template>
-        <!--<div class="col-12 xl:col-6">
-            
-            <div class="card">
-                <h5>Recent Sales</h5>
-                <DataTable :value="products" :rows="5" :paginator="true" responsiveLayout="scroll">
-                    <Column style="width: 15%">
-                        <template #header> Image </template>
-                        <template #body="slotProps">
-                            <img :src="'demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" width="50" class="shadow-2" />
-                        </template>
-                    </Column>
-                    <Column field="name" header="Name" :sortable="true" style="width: 35%"></Column>
-                    <Column field="price" header="Price" :sortable="true" style="width: 35%">
-                        <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.price) }}
-                        </template>
-                    </Column>
-                    <Column style="width: 15%">
-                        <template #header> View </template>
-                        <template #body>
-                            <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-            <div class="card">
-                <div class="flex justify-content-between align-items-center mb-5">
-                    <h5>Best Selling Products</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
-                        <Menu ref="menu2" :popup="true" :model="items"></Menu>
-                    </div>
-                </div>
-                <ul class="list-none p-0 m-0">
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-orange-500 h-full" style="width: 50%"></div>
-                            </div>
-                            <span class="text-orange-500 ml-3 font-medium">%50</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-cyan-500 h-full" style="width: 16%"></div>
-                            </div>
-                            <span class="text-cyan-500 ml-3 font-medium">%16</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-pink-500 h-full" style="width: 67%"></div>
-                            </div>
-                            <span class="text-pink-500 ml-3 font-medium">%67</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                            <div class="mt-1 text-600">Office</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-green-500 h-full" style="width: 35%"></div>
-                            </div>
-                            <span class="text-green-500 ml-3 font-medium">%35</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-purple-500 h-full" style="width: 75%"></div>
-                            </div>
-                            <span class="text-purple-500 ml-3 font-medium">%75</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-teal-500 h-full" style="width: 40%"></div>
-                            </div>
-                            <span class="text-teal-500 ml-3 font-medium">%40</span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-         <div class="col-12 xl:col-6"> 
-            <div class="card">
-                <h5>Sales Overview</h5>
-                <Chart type="line" :data="lineData" :options="lineOptions" />
-            </div>
-            <div class="card">
-                <div class="flex align-items-center justify-content-between mb-4">
-                    <h5>Notifications</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
-                        <Menu ref="menu1" :popup="true" :model="items"></Menu>
-                    </div>
-                </div>
-
-                <span class="block text-600 font-medium mb-3">TODAY</span>
-                <ul class="p-0 mx-0 mt-0 mb-4 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Richard Jones
-                            <span class="text-700">has purchased a blue t-shirt for <span class="text-blue-500">79$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-download text-xl text-orange-500"></i>
-                        </div>
-                        <span class="text-700 line-height-3">Your request for withdrawal of <span class="text-blue-500 font-medium">2500$</span> has been initiated.</span>
-                    </li>
-                </ul>
-
-                <span class="block text-600 font-medium mb-3">YESTERDAY</span>
-                <ul class="p-0 m-0 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Keyser Wick
-                            <span class="text-700">has purchased a black jacket for <span class="text-blue-500">59$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-question text-xl text-pink-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Jane Davis
-                            <span class="text-700">has posted a new questions about your product.</span>
-                        </span>
-                    </li>
-                </ul>
-            </div>
-            <div
-                class="px-4 py-5 shadow-2 flex flex-column md:flex-row md:align-items-center justify-content-between mb-3"
-                style="border-radius: 1rem; background: linear-gradient(0deg, rgba(0, 123, 255, 0.5), rgba(0, 123, 255, 0.5)), linear-gradient(92.54deg, #1c80cf 47.88%, #ffffff 100.01%)"
-            >
-                <div>
-                    <div class="text-blue-100 font-medium text-xl mt-2 mb-3">TAKE THE NEXT STEP</div>
-                    <div class="text-white font-medium text-5xl">Try PrimeBlocks</div>
-                </div>
-                <div class="mt-4 mr-auto md:mt-0 md:mr-0">
-                    <a href="https://www.primefaces.org/primeblocks-vue" class="p-button font-bold px-5 py-3 p-button-warning p-button-rounded p-button-raised"> Get Started </a>
-                </div>
-            </div>
-        </div> -->
-        <div class="grid">
-        <Toast/>
+    <Toast/>
+    
+    <div class="grid">
         
-        <div class="col-12 md:col-3">
+        <div class="col-12 md:col-4">
             <div class="card">
-                <h5>Buscar</h5>
-                <form >
+                <h5>Buscar por cedula</h5>
+                <form @submit.prevent="buscarCiudadanos(buscar.cedula)" >
                     <div class="p-fluid formgrid grid">
-                        <div class="field col-12 md:col-12">
-                            <label for="buscarCiudadano">Ingrese umero de cedula</label>
-                            <InputText v-model="cedulaBuscar" id="buscarCiudadano" type="text"  placeholder="Ej. 13555666" />
+                        <div class="field col-7 md:col-7">
+                            <InputText
+                            id="cedulaBuscar"
+                            v-model="buscar.cedula"
+                            placeholder="Ej. 12345678"
+                            />
+                        </div>
+                        <div class="field col-5 md:col-5">
+                            <Button
+                            @click="buscarCiudadanos(buscar.cedula)"
+                            class="p-button-success"
+                            label="Buscar"
+                            icon="pi pi-search"
+                            />
                         </div>
                     </div>
-                    <Button @click="buscarCiudadano" class="" label="Buscar"  icon="pi pi-check"></Button>
                 </form>
             </div>
+        </div> 
+        
+        <div class="col-12 md:col-4">
+            <Buscador
+            titulo="Buscar por nombre"
+            placeholder="Ej. Juan Pérez"
+            botonLabel="Buscar"
+            inputId="busquedaNombre"
+            @buscar="buscarNombre"
+            />
         </div>
         
+        <div class="col-12 md:col-4">
+            <Buscador
+            titulo="Buscar expediente"
+            placeholder="Ej. K-15-0071-05970"
+            botonLabel="Buscar"
+            inputId="busquedaExpediente"
+            @buscar="buscarExpediente"
+            />
+        </div>
+    </div>
+    
+    <div v-if="true"  class="grid"> 
         <div class="col-12">
             <div class="card">
                 <h5>Expediente</h5>
-                <form >
+                <form v-on:submit.prevent >
                     <div class="p-fluid formgrid grid">
                         
-                        <div class="card flex justify-center">
-                            <Image :src="rutaFotos+ciudadanoModel.foto" alt="Image" width="250" />
+                        <div class="ffield col-12 md:col-2 card flex justify-content-center align-items-center p-0 overflow-hidden">
+                            <Image :src="ciudadanoModel.foto ? ciudadanoModel.foto : personIcon" alt="Foto" width="150" preview />
                         </div>
-
+                        
+                        
                         <div class="field col-12 md:col-2">
-                            <label for="name">Cedula</label>
-                            <InputText @keyup.enter="buscarCne" :disabled="isDisabled" v-model="ciudadanoModel.cedula" id="name" type="text"  placeholder="Ej. 12345678" />
+                            <label for="cedula">Cedula</label>
+                            <InputText @keyup.enter="buscarCne" :disabled="cedulaDisabled" v-model="ciudadanoModel.cedula" id="cedula" type="text"  placeholder="Ej. 12345678" :class="{ 'p-invalid': errors.cedula }" />
+                            <small v-if="errors.cedula" class="p-error">{{ errors.cedula }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-3">
-                            <label for="name">Nombres</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.nombres" id="name" type="text"  placeholder="Ej. Jose" />
+                            <label for="nombres">Nombres</label>
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.nombres" id="nombres" type="text"  placeholder="Ej. Jose Luis" :class="{ 'p-invalid': errors.nombres }" />
+                            <small v-if="errors.nombres" class="p-error">{{ errors.nombres }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-3">
-                            <label for="desc">Apellidos</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.apellidos" id="desc" type="text"  placeholder="Ej. Garcia" />
+                            <label for="apellidos">Apellidos</label>
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.apellidos" id="apellidos" type="text"  placeholder="Ej. Garcia Zambrano" :class="{ 'p-invalid': errors.apellidos }" />
+                            <small v-if="errors.apellidos" class="p-error">{{ errors.apellidos }}</small>
+                        </div>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="alias">Alias</label>
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.alias" id="alias" type="text"  placeholder="Ej. Miguelito" :class="{ 'p-invalid': errors.alias }" />
+                            <small v-if="errors.alias" class="p-error">{{ errors.alias }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-3">
-                            <label for="desc">Fecha de nacimiento</label>
-                            <Calendar dateFormat="yy-mm-dd" placeholder="Ej. 2000/05/28" :showIcon="true" :showButtonBar="true" v-model="ciudadanoModel.fecha_nacimiento"></Calendar>
+                            <label for="nacionalidad">Nacionalidad</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.prefijo_nac" id="nacionalidad" :options="nacOptions" optionLabel="name" optionValue="code" placeholder="Seleccione..." :class="{ 'p-invalid': errors.prefijo_nac }"></Dropdown>
+                            <small v-if="errors.prefijo_nac" class="p-error">{{ errors.prefijo_nac }}</small>
                         </div>
-                
-
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="fecha de nacimiento">Fecha de nacimiento</label>
+                            <!-- <Calendar dateFormat="yy-mm-dd" placeholder="Ej. 2000/05/28" :showIcon="true" :showButtonBar="true" v-model="ciudadanoModel.fecha_nacimiento"></Calendar> -->       
+                            <InputMask :disabled="isDisabled" id="fecha_nac" v-model="ciudadanoModel.fecha_nacimiento" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errors.fecha_nacimiento }" />
+                            <small v-if="errors.fecha_nacimiento" class="p-error">{{ errors.fecha_nacimiento }}</small>
+                        </div>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="sexo">Sexo</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.sexo" id="sexo" :options="sexoOptions" optionLabel="name" optionValue="code" placeholder="Seleccione..." :class="{ 'p-invalid': errors.sexo }"></Dropdown>
+                            <small v-if="errors.sexo" class="p-error">{{ errors.sexo }}</small>
+                        </div>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="telefono">Telefono</label>
+                            <InputMask :disabled="isDisabled" mask="9999 999-9999" v-model="ciudadanoModel.telefono" id="celular" type="text"  placeholder="Ej. 0412888777" :class="{ 'p-invalid': errors.telefono }" />
+                            <small v-if="errors.telefono" class="p-error">{{ errors.telefono }}</small>
+                        </div>
+                        
                         <div class="field col-12 md:col-3">
-                            <label for="categories">Estado</label>
-                            <Dropdown v-model="ciudadanoModel.estado_pais" :options="estadosItems" showClear optionLabel="name" placeholder="Seleccione..." />
-                        </div>
-                        
-                        <div class="field col-6">
-                            <label for="address">Direccion</label>
-                            <InputText v-model="ciudadanoModel.direccion" id="address" rows="4" placeholder="Av. rafael urdaneta" />
-                        </div>
-
-                        <div class="field col-12 md:col-3">
-                            <label for="celular">Celular</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.celular" id="celular" type="text"  placeholder="Ej. 0412888777" />
-                        </div>
-                         
-                        
-                        <div class="field col-12 md:col-3">
-                            <label for="status">Detenido</label>
-                            <Dropdown v-model="ciudadanoModel.detenido" id="status" :options="detenidoOptions" optionLabel="name" placeholder="Seleccione SI o NO"></Dropdown>
+                            <label for="banda">Banda</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.id_banda" id="banda" :options="bandaOptions" optionLabel="name" optionValue="code"  placeholder="Seleccione..." :class="{ 'p-invalid': errors.id_banda }"></Dropdown>
+                            <small v-if="errors.id_banda" class="p-error">{{ errors.id_banda }}</small>
                         </div>
                         
                         
-                        <div class="field col-12 md:col-12">
-                            <label for="delitos">Delitos</label>
-                            <InputText v-model="ciudadanoModel.delitos" id="delitos" type="text"  placeholder="robo, desorden publico" />
+                        <h5 class="col-12">Direccion</h5>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="estado">Estado</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.id_estado" :options="estadoOptions"  optionLabel="name" placeholder="Seleccione..." optionValue="code" @change="buscarMunicipio" :class="{ 'p-invalid': errors.id_estado }"></Dropdown>
+                            <small v-if="errors.id_estado" class="p-error">{{ errors.id_estado }}</small>
                         </div>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="municipio">Municipio</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.id_municipio" :options="municipioOptions"  optionLabel="name" optionValue="code" placeholder="Seleccione..." @change="buscarParroquia" :class="{ 'p-invalid': errors.id_municipio }"></Dropdown>
+                            <small v-if="errors.id_municipio" class="p-error">{{ errors.id_municipio }}</small>
+                        </div>
+                        
+                        <div class="field col-12 md:col-2">
+                            <label for="parroquia">Parroquia</label>
+                            <Dropdown :disabled="isDisabled" v-model="ciudadanoModel.id_parroquia" :options="parroquiaOptions"  optionLabel="name" optionValue="code" placeholder="Seleccione..."  :class="{ 'p-invalid': errors.id_parroquia }"></Dropdown>
+                            <small v-if="errors.id_parroquia" class="p-error">{{ errors.id_parroquia }}</small>
+                        </div>
+                        
+                        <div class="field col-12 md:col-6">
+                            <label for="direccion">Linea 1</label>
+                            <Textarea :disabled="isDisabled" v-model="ciudadanoModel.direccion" id="direccion" rows="1" placeholder="Av. rafael urdaneta, mzn 8, casa 55" :class="{ 'p-invalid': errors.direccion }" />
+                            <small v-if="errors.direccion" class="p-error">{{ errors.direccion }}</small>
+                        </div>                                 
                     </div>
                     
                     
-                    <Button @click="guardarCiudadano" class="" label="Guardar"  icon="pi pi-check"></Button>
+                    <h5>Foto</h5>
+                    <div class="card flex flex-wrap gap-6 items-center justify-between">
+                        <Toast />
+                        <FileUpload  chooseLabel="Seleccionar" ref="fileupload" mode="basic" name="demo[]" accept="image/*" :maxFileSize="5000000" />
+                        <Button label="Subir" @click="upload" severity="secondary" />
+                    </div>
+                    
+                    
+                    <div class="field col-12 md:col-3 md:col-offset-4 flex justify-content-center">
+                        <Button severity="success" label="Guardar" icon="pi pi-check" iconPos="right" @click="sendCiudadano" />
+                        <Toast />
+                    </div>
                 </form>
             </div>
         </div>
     </div>
-</template>
+    
+    <!------------------------------  MODAL DE DELITOS  --------------------------->
+    
+    <Dialog v-model:visible="modalVisible" :style="{ width: '35vw' }" modal header="Agregar Delito a al ciudadano">
+        <template #header>
+            <div class="inline-flex items-center justify-center gap-2">
+                <span class="font-bold whitespace-nowrap">Agregar delito al ciudadano: {{ ciudadanoModel.nombres.toUpperCase() + ' ' + ciudadanoModel.apellidos.toUpperCase() }} </span>
+            </div>
+        </template>
+        <div class="grid p-fluid formgrid">
+            
+            <div class="field col-12 md:col-4">
+                <label for="expediente">Caso</label>
+                <InputText placeholder="K-15-0071-05970" v-model="delitoModel.expediente" id="expediente" type="text" :class="{ 'p-invalid': errorsModal.expediente }" />
+                <small v-if="errorsModal.expediente" class="p-error">{{ errorsModal.expediente }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-4">
+                <label for="organismo">Aprehensor</label>
+                <Dropdown v-model="delitoModel.id_organismo" class="capitalize" id="organismo" optionValue="code" :options="organismoOptions" optionLabel="name" placeholder="Seleccione..."  :class="{ 'p-invalid': errorsModal.id_organismo }" />
+                <small v-if="errorsModal.id_organismo" class="p-error">{{ errorsModal.id_organismo }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-6">
+                <label for="fecha_detencion">Fecha de detencion</label>
+                <Calendar id="datepicker-24h" v-model="delitoModel.fecha_detencion" showTime hourFormat="24" fluid />
+                <!--<InputMask id="fecha_detencion" v-model="delitoModel.fecha_detencion" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errorsModal.fecha_detencion}" /> -->
+                <small v-if="errorsModal.fecha_detencion" class="p-error">{{ errorsModal.fecha_detencion }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-4">
+                <label for="lugar_detencion">Lugar de detencion</label>
+                <InputText  v-model="delitoModel.lugar_detencion" id="lugar_detencion" type="text" :class="{ 'p-invalid': errorsModal.lugar_detencion }" />
+                <small v-if="errorsModal.lugar_detencion" class="p-error">{{ errorsModal.lugar_detencion }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-4">
+                <label for="observaciones">Observaciones</label>
+                <InputText placeholder="" v-model="delitoModel.observaciones"  id="lugar_detencion" type="text" :class="{ 'p-invalid': errorsModal.observaciones }" />
+                <small v-if="errorsModal.observaciones" class="p-error">{{ errorsModal.observaciones }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-12">
+                <label for="delito">Delito</label>
+                <Dropdown v-model="delitoModel.id_delito" class="capitalize" id="delito" optionValue="code" :options="delitosOptions" optionLabel="name" placeholder="Seleccione..."  :class="{ 'p-invalid': errorsModal.id_delito }" />
+                <small v-if="errorsModal.id_delito" class="p-error">{{ errorsModal.id_delito }}</small>
+            </div>
+            
+        </div>
+        
+        <template #footer>
+            <Button 
+            label="Cancelar" 
+            text 
+            severity="danger" 
+            @click="modalVisible = false" 
+            />
+            <Button 
+            label="Guardar" 
+            outlined 
+            severity="success" 
+            @click="sendDelito" 
+            />
+        </template>  
+    </Dialog>
+    
+    
+    <div class="card">
+        <div class="p-fluid formgrid grid">   
+            <h5 class="col-12 md:col-3">Delitos</h5>
+            <div class="field col-12 md:col-3 md:col-offset-6 flex justify-content-center">
+                <Button v-if="ciudadanoEncontrado" severity="secondary" label="Agregar" icon="pi pi-plus" iconPos="right" @click="modalVisible = true" />
+                <Toast />
+            </div>
+            
+        </div>
+        
+        <DataTable :value="delitosCiudadano" stripedRows tableStyle="min-width: 50rem">
+            <Column field="expediente" header="Caso"></Column>
+            <Column field="fecha_detencion" header="Fecha"></Column>
+            <Column field="nombre_delito" header="Delito">
+                <template #body="{ data }">
+                    <span v-tooltip.top="data.nombre_delito">
+                         {{ data.nombre_delito.length > 30 ? data.nombre_delito.substring(0, 30) + '...' : data.nombre_delito }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="org_siglas" header="Aprehensor">
+                <template #body="{ data }">
+                    <span v-tooltip.top="data.org_nombre">
+                        {{ data.org_siglas }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="u_nombre" header="Reseñador">
+                <template #body="{ data }">
+                    <span v-tooltip.top="data.u_username">
+                        {{ data.u_nombre + ' ' + data.u_apellido }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="observaciones" header="Detalles">
+                <template #body="{ data }">
+                    <span v-tooltip.top="data.observaciones">
+                        {{ data.observaciones.length > 30 ? data.observaciones.substring(0, 30) + '...' : data.observaciones }}
+                    </span>
+                </template>
+            </Column>
+        </DataTable>
+    </div>
+</template> 
