@@ -11,7 +11,8 @@ const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
 const router = useRouter();
 
-const user = JSON.parse(localStorage.getItem('user'))
+const local = JSON.parse(localStorage.getItem('user'))
+const user = local.usuario || 'Usuario';
 
 onMounted(() => {
     bindOutsideClickListener();
@@ -77,7 +78,7 @@ const isOutsideClicked = (event) => {
     <div class="layout-topbar">
         <router-link to="/" class="layout-topbar-logo">
             <img :src="logoUrl" alt="logo" />
-            <span>Expedientes</span>
+            <span>S.I.R.I.D</span>
         </router-link>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
@@ -95,7 +96,7 @@ const isOutsideClicked = (event) => {
             </button> -->
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button capitalize">
                 <i class="pi pi-user"></i>
-                <span>{{ user.usuario }}</span>
+                <span>{{ user }}</span>
             </button>
             <button @click="onSettingsClick()" class="p-link layout-topbar-button">
                 <i class="pi pi-cog"></i>

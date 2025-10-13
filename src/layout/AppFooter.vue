@@ -15,6 +15,6 @@ const logoUrl = computed(()=>{
 <template>
     <div class="layout-footer">
         <img :src="logoUrl" alt="Logo" height="32" class="mr-2" />
-        <span class="font-medium ml-1">Cuerpo de investigaciónes penales y criminalísticas</span>
+        <span class="font-medium ml-1">Sistema integrado de reseñas internas para detenidos. </span>
     </div>
 </template>

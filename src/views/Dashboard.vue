@@ -1,12 +1,12 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-import Calendar from 'primevue/calendar';
 import { useLayout } from '@/layout/composables/layout';
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const personIcon = ('src/assets/person-icon.svg');
 import * as yup from 'yup';
-import {config, validateForm, resizeImage} from '../utils.js'
+import {config, validateForm, resizeImage, imgToBase64, compressImg, formatDate} from '../utils.js'
+import { pdfCiudadano } from '../reportes/pdfCiudadano.js';
 
 import { getCurrentInstance } from 'vue';
 const fileupload = ref(null);
@@ -124,6 +124,31 @@ const bandaOptions = ref([
 
 const isDisabled = ref(false);
 const cedulaDisabled = ref(false);
+const resenador = JSON.parse(localStorage.getItem('user'))
+
+const resetForm = () => {
+    ciudadanoModel.value = {
+        id_ciudadano: null, cedula: null, nombres: "", apellidos: "", alias: "", prefijo_nac: "", fecha_nacimiento: "",
+        sexo: "", telefono: "", id_banda: null, id_estado: null, id_municipio: null,
+        id_parroquia: null, direccion: "", foto: ""
+    };
+    delitoModel.value = {
+        expediente: "",
+        id_ciudadano: null,
+        id_usuario_registro: resenador.id,
+        id_organismo: null,
+        fecha_detencion: "",
+        lugar_detencion: "",
+        id_delito: null,
+        observaciones: "",
+    };
+    delitosCiudadano.value = [];
+    errors.value = {};
+    errorsModal.value = {};
+    isDisabled.value = false;
+    cedulaDisabled.value = false;
+    ciudadanoEncontrado.value = false;
+};
 
 const ciudadanoSchema = yup.object({
     cedula: yup.string().max(8).required('La cédula es obligatoria'),
@@ -165,7 +190,7 @@ onMounted( async () => {
 });
 onMounted( async () => {
     const bandas = await getAllBandas();    
-    bandaOptions.value = [];
+    //bandaOptions.value = [];
     bandas.data.forEach(banda => {
         bandaOptions.value.push({
             name: banda.nombre,
@@ -222,18 +247,15 @@ const buscarCne = async () =>{
     console.log(res.json())
 }
 
-const buscar = {cedula: 27158922, nombre: '', expediente: ''};
+const buscar = {cedula: 14509013, nombre: '', expediente: ''};
 
 
 const ciudadanoModel = ref(
 {
-    cedula: null, nombres: "", apellidos: "", alias: "", prefijo_nac: "", fecha_nacimiento: "",
-    sexo: "", telefono: "", id_banda: null, id_estado: null, id_municipio: null,
+    id_ciudadano: null, cedula: null, nombres: "", apellidos: "", alias: "", prefijo_nac: "", fecha_nacimiento: "", sexo: "", telefono: "", id_banda: null, id_estado: null, id_municipio: null,
     id_parroquia: null, direccion: "", foto: ""
 }
 );
-
-const resenador = JSON.parse(localStorage.getItem('user'))
 
 const delitoModel = ref(
 {
@@ -248,14 +270,6 @@ const delitoModel = ref(
 }
 );
 
-/*
-const ciudadanoModel = ref(
-{
-cedula: 27158922, nombres: "efrain jose", apellidos: "figueredo barreto", alias: "negrito", nac: "V", fecha_nac: "22/01/1998", sexo: "M", telefono: "04129491621", banda: 0, estado: 6, municipio: 66,
-parroquia: 214, direccion: "core 8", foto: ""
-}
-);*/
-
 const buscarCiudadanos = async (cedula) => {
     if(cedula){
         const data = await buscarCiudadano(cedula);
@@ -265,7 +279,6 @@ const buscarCiudadanos = async (cedula) => {
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el ciudadano.', life: 3000 });
             return;
         }
-        
         if(data.error){
             toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
             return;
@@ -277,16 +290,25 @@ const buscarCiudadanos = async (cedula) => {
         ciudadanoEncontrado.value = true;
         isDisabled.value = true;
         
-        const resDelitos = await getDelitosCiudadano(data.data[0].id_ciudadano);
-        delitosCiudadano.value = resDelitos.data;
-        delitosCiudadano.value.forEach(delito => {
-            delito.fecha_detencion = new Date(delito.fecha_detencion).toLocaleDateString('es-VE');
-        });  
+        //Buscar y asginar los delitos a variable local delitosCiudadanos
+        await buscarDelitosCiudadanos(data.data[0].id_ciudadano)
         
     }else{
         toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
         return;
     }
+}
+
+const buscarDelitosCiudadanos = async (id_ciudadano) =>{
+    const resDelitos = await getDelitosCiudadano(id_ciudadano);
+    delitosCiudadano.value = resDelitos.data;
+    if(resDelitos.data != false){
+        delitosCiudadano.value.forEach(delito => {
+            delito.fecha_detencion = new Date(delito.fecha_detencion).toLocaleString('es-VE', formatDate);
+            console.log(delito.fecha_detencion, "fecha delito")
+        });
+    }
+    return 
 }
 
 
@@ -312,7 +334,8 @@ const buscarNombre = async (valor) => {
     }
 };
 
-// Captura y convierte la imagen seleccionada en base64 usando la referencia de FileUpload
+// ****** Funcion para procesar las fotos *********
+// ****** Captura y convierte la imagen seleccionada en base64 usando la referencia de FileUpload****
 const upload = async () => {
     // Usar la referencia de FileUpload para obtener el archivo
     const files = fileupload.value && fileupload.value.files ? fileupload.value.files : [];
@@ -321,6 +344,7 @@ const upload = async () => {
         try {
             const resizedBase64 = await resizeImage(file, 900, 900, 0.7); // Puedes ajustar tamaño/calidad
             ciudadanoModel.value.foto = resizedBase64;
+            console.log(resizedBase64, "resizedBase64");    
             toast.add({ severity: 'info', summary: 'Operacion exitosa', detail: 'Foto subida.', life: 3000 }); 
         } catch (err) {
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo reducir la imagen.', life: 3000 });
@@ -331,6 +355,9 @@ const upload = async () => {
         toast.add({ severity: 'info', summary: 'Sin foto', detail: 'No se subió ninguna imagen. El registro se guardará sin foto.', life: 3000 });
     }
 };
+
+
+
 
 const sendCiudadano = async () => {
     const validationResult = await validateForm(ciudadanoSchema, ciudadanoModel.value);
@@ -350,8 +377,8 @@ const sendCiudadano = async () => {
         }else{
             toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Ciudadano registrado.', life: 3000 });
             ciudadanoModel.value = {
-                nombre: "", descripcion: "", activo: true
             };
+            delitosCiudadano.value ={}
             //emit('delito-created');
         }
         //console.log(data);
@@ -378,8 +405,9 @@ const sendDelito = async () => {
             return
         }else{
             toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Delito registrado.', life: 3000 });
-            delitoModel.value = {};
-            //emit('delito-created');
+            delitoModel.value = {id_ciudadano: ciudadanoModel.id_ciudadano, resenador: resenador ,expediente: "", fecha_detencion: "", lugar_detencion:"", id_organismo:"", id_delito:"", observaciones:""};
+            //console.log("PROBANDO", ciudadanoModel.value.id_ciudadano)
+            await buscarDelitosCiudadanos(ciudadanoModel.value.id_ciudadano) 
         }
         //console.log(data);
     }
@@ -387,14 +415,10 @@ const sendDelito = async () => {
 
 
 
-
-
-
 </script>
 
 <template>
     <Toast/>
-    
     <div class="grid">
         
         <div class="col-12 md:col-4">
@@ -406,7 +430,7 @@ const sendDelito = async () => {
                             <InputText
                             id="cedulaBuscar"
                             v-model="buscar.cedula"
-                            placeholder="Ej. 12345678"
+                            placeholder=""
                             />
                         </div>
                         <div class="field col-5 md:col-5">
@@ -425,7 +449,7 @@ const sendDelito = async () => {
         <div class="col-12 md:col-4">
             <Buscador
             titulo="Buscar por nombre"
-            placeholder="Ej. Juan Pérez"
+            placeholder=""
             botonLabel="Buscar"
             inputId="busquedaNombre"
             @buscar="buscarNombre"
@@ -435,7 +459,7 @@ const sendDelito = async () => {
         <div class="col-12 md:col-4">
             <Buscador
             titulo="Buscar expediente"
-            placeholder="Ej. K-15-0071-05970"
+            placeholder=""
             botonLabel="Buscar"
             inputId="busquedaExpediente"
             @buscar="buscarExpediente"
@@ -457,25 +481,25 @@ const sendDelito = async () => {
                         
                         <div class="field col-12 md:col-2">
                             <label for="cedula">Cedula</label>
-                            <InputText @keyup.enter="buscarCne" :disabled="cedulaDisabled" v-model="ciudadanoModel.cedula" id="cedula" type="text"  placeholder="Ej. 12345678" :class="{ 'p-invalid': errors.cedula }" />
+                            <InputText @keyup.enter="buscarCne" :disabled="cedulaDisabled" v-model="ciudadanoModel.cedula" id="cedula" type="text"  placeholder="" :class="{ 'p-invalid': errors.cedula }" />
                             <small v-if="errors.cedula" class="p-error">{{ errors.cedula }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-3">
                             <label for="nombres">Nombres</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.nombres" id="nombres" type="text"  placeholder="Ej. Jose Luis" :class="{ 'p-invalid': errors.nombres }" />
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.nombres" id="nombres" type="text"  placeholder="" :class="{ 'p-invalid': errors.nombres }" />
                             <small v-if="errors.nombres" class="p-error">{{ errors.nombres }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-3">
                             <label for="apellidos">Apellidos</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.apellidos" id="apellidos" type="text"  placeholder="Ej. Garcia Zambrano" :class="{ 'p-invalid': errors.apellidos }" />
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.apellidos" id="apellidos" type="text"  placeholder="" :class="{ 'p-invalid': errors.apellidos }" />
                             <small v-if="errors.apellidos" class="p-error">{{ errors.apellidos }}</small>
                         </div>
                         
                         <div class="field col-12 md:col-2">
-                            <label for="alias">Alias</label>
-                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.alias" id="alias" type="text"  placeholder="Ej. Miguelito" :class="{ 'p-invalid': errors.alias }" />
+                            <label for="alias">Alias y/o apodo</label>
+                            <InputText :disabled="isDisabled" v-model="ciudadanoModel.alias" id="alias" type="text"  placeholder="" :class="{ 'p-invalid': errors.alias }" />
                             <small v-if="errors.alias" class="p-error">{{ errors.alias }}</small>
                         </div>
                         
@@ -488,7 +512,7 @@ const sendDelito = async () => {
                         <div class="field col-12 md:col-2">
                             <label for="fecha de nacimiento">Fecha de nacimiento</label>
                             <!-- <Calendar dateFormat="yy-mm-dd" placeholder="Ej. 2000/05/28" :showIcon="true" :showButtonBar="true" v-model="ciudadanoModel.fecha_nacimiento"></Calendar> -->       
-                            <InputMask :disabled="isDisabled" id="fecha_nac" v-model="ciudadanoModel.fecha_nacimiento" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errors.fecha_nacimiento }" />
+                            <InputMask :disabled="isDisabled" id="fecha_nac" v-model="ciudadanoModel.fecha_nacimiento" placeholder="" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errors.fecha_nacimiento }" />
                             <small v-if="errors.fecha_nacimiento" class="p-error">{{ errors.fecha_nacimiento }}</small>
                         </div>
                         
@@ -500,7 +524,7 @@ const sendDelito = async () => {
                         
                         <div class="field col-12 md:col-2">
                             <label for="telefono">Telefono</label>
-                            <InputMask :disabled="isDisabled" mask="9999 999-9999" v-model="ciudadanoModel.telefono" id="celular" type="text"  placeholder="Ej. 0412888777" :class="{ 'p-invalid': errors.telefono }" />
+                            <InputMask :disabled="isDisabled" mask="9999 999-9999" v-model="ciudadanoModel.telefono" id="celular" type="text"  placeholder="" :class="{ 'p-invalid': errors.telefono }" />
                             <small v-if="errors.telefono" class="p-error">{{ errors.telefono }}</small>
                         </div>
                         
@@ -532,8 +556,8 @@ const sendDelito = async () => {
                         </div>
                         
                         <div class="field col-12 md:col-6">
-                            <label for="direccion">Linea 1</label>
-                            <Textarea :disabled="isDisabled" v-model="ciudadanoModel.direccion" id="direccion" rows="1" placeholder="Av. rafael urdaneta, mzn 8, casa 55" :class="{ 'p-invalid': errors.direccion }" />
+                            <label for="direccion">Direccion 1</label>
+                            <Textarea :disabled="isDisabled" v-model="ciudadanoModel.direccion" id="direccion" rows="1" placeholder="" :class="{ 'p-invalid': errors.direccion }" />
                             <small v-if="errors.direccion" class="p-error">{{ errors.direccion }}</small>
                         </div>                                 
                     </div>
@@ -547,10 +571,13 @@ const sendDelito = async () => {
                     </div>
                     
                     
-                    <div class="field col-12 md:col-3 md:col-offset-4 flex justify-content-center">
+                    <div class="field col-12 md:col-4 md:col-offset-4 flex justify-content-center">
                         <Button severity="success" label="Guardar" icon="pi pi-check" iconPos="right" @click="sendCiudadano" />
+                        <Button v-if="ciudadanoEncontrado" severity="secondary" label="Cancelar" icon="pi pi-times " iconPos="right" @click="resetForm" />
+                        <Button v-if="ciudadanoEncontrado" label="IMPRIMIR" icon="pi pi-file-pdf" severity="danger" outlined @click="pdfCiudadano(ciudadanoModel.cedula)"/>
                         <Toast />
                     </div>
+                    
                 </form>
             </div>
         </div>
@@ -558,7 +585,7 @@ const sendDelito = async () => {
     
     <!------------------------------  MODAL DE DELITOS  --------------------------->
     
-    <Dialog v-model:visible="modalVisible" :style="{ width: '35vw' }" modal header="Agregar Delito a al ciudadano">
+    <Dialog v-model:visible="modalVisible" :style="{ width: '50vw' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" modal header="Agregar Delito a al ciudadano">
         <template #header>
             <div class="inline-flex items-center justify-center gap-2">
                 <span class="font-bold whitespace-nowrap">Agregar delito al ciudadano: {{ ciudadanoModel.nombres.toUpperCase() + ' ' + ciudadanoModel.apellidos.toUpperCase() }} </span>
@@ -568,7 +595,7 @@ const sendDelito = async () => {
             
             <div class="field col-12 md:col-4">
                 <label for="expediente">Caso</label>
-                <InputText placeholder="K-15-0071-05970" v-model="delitoModel.expediente" id="expediente" type="text" :class="{ 'p-invalid': errorsModal.expediente }" />
+                <InputText placeholder="" v-model="delitoModel.expediente" id="expediente" type="text" :class="{ 'p-invalid': errorsModal.expediente }" />
                 <small v-if="errorsModal.expediente" class="p-error">{{ errorsModal.expediente }}</small>
             </div>
             
@@ -578,12 +605,6 @@ const sendDelito = async () => {
                 <small v-if="errorsModal.id_organismo" class="p-error">{{ errorsModal.id_organismo }}</small>
             </div>
             
-            <div class="field col-12 md:col-6">
-                <label for="fecha_detencion">Fecha de detencion</label>
-                <Calendar id="datepicker-24h" v-model="delitoModel.fecha_detencion" showTime hourFormat="24" fluid />
-                <!--<InputMask id="fecha_detencion" v-model="delitoModel.fecha_detencion" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errorsModal.fecha_detencion}" /> -->
-                <small v-if="errorsModal.fecha_detencion" class="p-error">{{ errorsModal.fecha_detencion }}</small>
-            </div>
             
             <div class="field col-12 md:col-4">
                 <label for="lugar_detencion">Lugar de detencion</label>
@@ -593,7 +614,7 @@ const sendDelito = async () => {
             
             <div class="field col-12 md:col-4">
                 <label for="observaciones">Observaciones</label>
-                <InputText placeholder="" v-model="delitoModel.observaciones"  id="lugar_detencion" type="text" :class="{ 'p-invalid': errorsModal.observaciones }" />
+                <InputText placeholder="" v-model="delitoModel.observaciones"  id="observaciones" type="text" :class="{ 'p-invalid': errorsModal.observaciones }" />
                 <small v-if="errorsModal.observaciones" class="p-error">{{ errorsModal.observaciones }}</small>
             </div>
             
@@ -601,6 +622,14 @@ const sendDelito = async () => {
                 <label for="delito">Delito</label>
                 <Dropdown v-model="delitoModel.id_delito" class="capitalize" id="delito" optionValue="code" :options="delitosOptions" optionLabel="name" placeholder="Seleccione..."  :class="{ 'p-invalid': errorsModal.id_delito }" />
                 <small v-if="errorsModal.id_delito" class="p-error">{{ errorsModal.id_delito }}</small>
+            </div>
+            
+            <div class="field col-12 md:col-6">
+                <label for="fecha_detencion">Fecha de detencion</label>
+                <input type="datetime-local" v-model="delitoModel.fecha_detencion" id="fecha_detencion" class="p-inputtext p-component w-full" :class="{ 'p-invalid': errorsModal.fecha_detencion}" />
+                <!--<Calendar class="calendar-small" dateFormat="yy/mm/dd "  id="datepicker-24h" v-model="delitoModel.fecha_detencion" showTime hourFormat="24" fluid /> -->
+                <!--<InputMask id="fecha_detencion" v-model="delitoModel.fecha_detencion" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errorsModal.fecha_detencion}" /> -->
+                <small v-if="errorsModal.fecha_detencion" class="p-error">{{ errorsModal.fecha_detencion }}</small>
             </div>
             
         </div>
@@ -638,7 +667,7 @@ const sendDelito = async () => {
             <Column field="nombre_delito" header="Delito">
                 <template #body="{ data }">
                     <span v-tooltip.top="data.nombre_delito">
-                         {{ data.nombre_delito.length > 30 ? data.nombre_delito.substring(0, 30) + '...' : data.nombre_delito }}
+                        {{ data.nombre_delito.length > 30 ? data.nombre_delito.substring(0, 30) + '...' : data.nombre_delito }}
                     </span>
                 </template>
             </Column>
@@ -666,3 +695,9 @@ const sendDelito = async () => {
         </DataTable>
     </div>
 </template> 
+
+<style scoped>
+.calendar-small {
+    width: 220px !important; /* Ajusta el valor según lo que necesites */
+}
+</style>

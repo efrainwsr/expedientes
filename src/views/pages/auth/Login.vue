@@ -39,7 +39,7 @@ const login = async () => {
         if (err.response.data.message) {
             errorMessage.value = err.response.data.message || 'Error de autenticación';
             //loginError()
-            console.log(errorMessage.value, 'estamos aqui')
+            console.log(errorMessage.value)
         } else {
             errorMessage.value = 'Error de conexión con el servidor';
         }
@@ -58,15 +58,15 @@ const mainLogo = '../../../../public/main-logo.png'
 </script>
 
 <template>
-    <div class="mt-5 surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
+    <div class=" surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
         <div class="flex flex-column align-items-center justify-content-center">
             <!-- <img :src="mainLogo" alt="Sakai logo" class="mb-5 w-12rem flex-shrink-0" /> -->
             <div style="border-radius: 56px; padding: 0.3rem;" class="shadow-2xl">
-                <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
+                <div class="w-full surface-card py-6 px-4 sm:px-8" style="border-radius: 53px">
                     <div class="text-center mb-5">
-                        <img :src="mainLogo" alt="Image" height="76" class="mb-3" />
-                        <div class="text-900 text-3xl font-medium mb-3">Bienvenido</div>
-                        <span class="text-600 font-medium">Inicia sesion para continuar</span>
+                        <img :src="mainLogo" alt="Image" height="135" class="mb-3" />
+                        <div class="text-900 text-3xl font-medium mb-3">S.I.R.I.D</div>
+                        <span class="text-600 font-medium">Sistema integrado de reseñas internas para detenidos</span>
                     </div>
                     
                     <div>

@@ -3,11 +3,22 @@ import * as yup from 'yup';
 
 // src/config.js
 export const config = {
-    //apiBaseUrl: 'http://10.0.0.239:3001' // Reemplaza con la IP y puerto correctos de la api
+    //apiBaseUrl: 'http://10.0.0.254:3001' // Reemplaza con la IP y puerto correctos de la api
     //apiBaseUrl: 'http://192.168.0.39:3001' 
     apiBaseUrl: 'http://localhost:3001' // Reemplaza con la IP y puerto correctos de la api
     //apiBaseUrl: 'https://kbzk6l8x-3001.use2.devtunnels.ms'
+    //apiBaseUrl:   'https://r3q0t38p-3001.use2.devtunnels.ms'
   };
+
+export const formatDate = {
+  day: '2-digit',     // Día (ej: 06)
+        month: '2-digit',   // Mes (ej: 10)
+        year: 'numeric',    // Año (ej: 2025)
+        hour: '2-digit',    // Hora (ej: 10)
+        minute: '2-digit',  // Minuto (ej: 14)
+        second: undefined,  // <--- CLAVE: Ignoramos los segundos
+        hour12: true, 
+}
 
 export function fechaActual(){
   const actual = new Date();
@@ -17,6 +28,33 @@ export function fechaActual(){
 
   return `${anio}-${mes}-${dia}`
 }
+
+ export function parseFecha(fechaStr) {
+      if (!fechaStr) return null;
+      const [dia, mes, anio] = fechaStr.split('/');
+      return new Date(`${anio}-${mes}-${dia}`);
+    }
+
+
+// Utilidad para obtener fecha actual
+ export function fechaActualhhmm() {
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  const hours = d.getHours()
+  const minutes = d.getMinutes().toString().padStart(2, '0')
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+export function invertDate (fecha){
+  const d = new Date(`${fecha}T00:00:00`);
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  return `${day}/${month}/${year}`
+}
+
 
 
 export function imgToBase64(file){
