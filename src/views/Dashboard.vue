@@ -273,8 +273,6 @@ const delitoModel = ref(
 const buscarCiudadanos = async (cedula) => {
     if(cedula){
         const data = await buscarCiudadano(cedula);
-        //console.log(data, "data buscarCiudadano");
-        
         if(data.data === false){
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el ciudadano.', life: 3000 });
             return;
@@ -289,10 +287,33 @@ const buscarCiudadanos = async (cedula) => {
         cedulaDisabled.value = true;
         ciudadanoEncontrado.value = true;
         isDisabled.value = true;
-        
         //Buscar y asginar los delitos a variable local delitosCiudadanos
         await buscarDelitosCiudadanos(data.data[0].id_ciudadano)
+    }else{
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
+        return;
+    }
+}
+
+const buscarExpediente = async (cedula) => {
+    if(cedula){
+        const data = await buscarCiudadano(cedula);
+        if(data.data === false){
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el ciudadano.', life: 3000 });
+            return;
+        }
+        if(data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
+            return;
+        }
         
+        ciudadanoModel.value = data.data[0];
+        delitoModel.value.id_ciudadano = data.data[0].id_ciudadano
+        cedulaDisabled.value = true;
+        ciudadanoEncontrado.value = true;
+        isDisabled.value = true;
+        //Buscar y asginar los delitos a variable local delitosCiudadanos
+        await buscarDelitosCiudadanos(data.data[0].id_ciudadano)
     }else{
         toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
         return;
@@ -305,7 +326,6 @@ const buscarDelitosCiudadanos = async (id_ciudadano) =>{
     if(resDelitos.data != false){
         delitosCiudadano.value.forEach(delito => {
             delito.fecha_detencion = new Date(delito.fecha_detencion).toLocaleString('es-VE', formatDate);
-            console.log(delito.fecha_detencion, "fecha delito")
         });
     }
     return 
@@ -327,10 +347,10 @@ const buscarNombre = async (valor) => {
     if (encontrado) {
         ciudadanoModel.value = encontrado;
         // Opcional: Para ver el objeto puro en la consola sin el Proxy de Vue
-        console.log("Ciudadano encontrado:", JSON.parse(JSON.stringify(encontrado)));
+        //console.log("Ciudadano encontrado:", JSON.parse(JSON.stringify(encontrado)));
     } else {
         ciudadanoModel.value = null; // Si no se encuentra, limpiamos el valor anterior
-        console.log(`No se encontró ningún ciudadano con la cédula: ${nombreNormalizado}`);
+       //console.log(`No se encontró ningún ciudadano con la cédula: ${nombreNormalizado}`);
     }
 };
 
@@ -344,7 +364,6 @@ const upload = async () => {
         try {
             const resizedBase64 = await resizeImage(file, 900, 900, 0.7); // Puedes ajustar tamaño/calidad
             ciudadanoModel.value.foto = resizedBase64;
-            console.log(resizedBase64, "resizedBase64");    
             toast.add({ severity: 'info', summary: 'Operacion exitosa', detail: 'Foto subida.', life: 3000 }); 
         } catch (err) {
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo reducir la imagen.', life: 3000 });
@@ -376,9 +395,8 @@ const sendCiudadano = async () => {
             return
         }else{
             toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Ciudadano registrado.', life: 3000 });
-            ciudadanoModel.value = {
-            };
-            delitosCiudadano.value ={}
+            ciudadanoModel.value = {};
+            delitosCiudadano.value = {}
             //emit('delito-created');
         }
         //console.log(data);
@@ -405,15 +423,13 @@ const sendDelito = async () => {
             return
         }else{
             toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Delito registrado.', life: 3000 });
-            delitoModel.value = {id_ciudadano: ciudadanoModel.id_ciudadano, resenador: resenador ,expediente: "", fecha_detencion: "", lugar_detencion:"", id_organismo:"", id_delito:"", observaciones:""};
+            delitoModel.value = {id_ciudadano: ciudadanoModel.value.id_ciudadano, id_usuario_registro: resenador.id ,expediente: "", fecha_detencion: "", lugar_detencion:"", id_organismo:"", id_delito:"", observaciones:""};
             //console.log("PROBANDO", ciudadanoModel.value.id_ciudadano)
             await buscarDelitosCiudadanos(ciudadanoModel.value.id_ciudadano) 
         }
         //console.log(data);
     }
 }
-
-
 
 </script>
 
@@ -510,8 +526,7 @@ const sendDelito = async () => {
                         </div>
                         
                         <div class="field col-12 md:col-2">
-                            <label for="fecha de nacimiento">Fecha de nacimiento</label>
-                            <!-- <Calendar dateFormat="yy-mm-dd" placeholder="Ej. 2000/05/28" :showIcon="true" :showButtonBar="true" v-model="ciudadanoModel.fecha_nacimiento"></Calendar> -->       
+                            <label for="fecha de nacimiento">Fecha de nacimiento</label>     
                             <InputMask :disabled="isDisabled" id="fecha_nac" v-model="ciudadanoModel.fecha_nacimiento" placeholder="" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errors.fecha_nacimiento }" />
                             <small v-if="errors.fecha_nacimiento" class="p-error">{{ errors.fecha_nacimiento }}</small>
                         </div>
@@ -627,8 +642,6 @@ const sendDelito = async () => {
             <div class="field col-12 md:col-6">
                 <label for="fecha_detencion">Fecha de detencion</label>
                 <input type="datetime-local" v-model="delitoModel.fecha_detencion" id="fecha_detencion" class="p-inputtext p-component w-full" :class="{ 'p-invalid': errorsModal.fecha_detencion}" />
-                <!--<Calendar class="calendar-small" dateFormat="yy/mm/dd "  id="datepicker-24h" v-model="delitoModel.fecha_detencion" showTime hourFormat="24" fluid /> -->
-                <!--<InputMask id="fecha_detencion" v-model="delitoModel.fecha_detencion" placeholder="15/01/1999" mask="99/99/9999" slotChar="dd/mm/yyyy" :class="{ 'p-invalid': errorsModal.fecha_detencion}" /> -->
                 <small v-if="errorsModal.fecha_detencion" class="p-error">{{ errorsModal.fecha_detencion }}</small>
             </div>
             

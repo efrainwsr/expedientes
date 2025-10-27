@@ -38,6 +38,7 @@ export async function getEstados(){
                 'auth-token': localStorage.getItem('token')
             }
         });
+        //console.log("estados", data)
     return data
     } catch (err) {
         console.log(err)

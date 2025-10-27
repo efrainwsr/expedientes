@@ -24,11 +24,10 @@ function invertDate (fecha){
 
 // Función para generar y descargar el PDF
 export async function createTemplate(org, rangoFechas){
-  console.log("2. llegamos a create template", org)
+  
   let reg = []
 
   if(org == null || org == undefined ){
-    console.log("3.ejecutamos getAllDet")
     const {data} = await getAllDet(rangoFechas);
     if(data.length === 0) reg = [{org: 'SIN REGISTROS', det: 0}]
     else reg = data
@@ -38,7 +37,6 @@ export async function createTemplate(org, rangoFechas){
     if(data.length === 0) reg = [{org: 'SIN REGISTROS', det: 0}]
     else reg = data
   }
-
 
   // Crear documento PDF
   const pdfDoc = await PDFDocument.create()
@@ -61,7 +59,8 @@ export async function createTemplate(org, rangoFechas){
   // Tabla configuración
   const colWidths = [420, 95]
   const tableX = 50
-  const cellHeight = 25
+  // Aumentamos la altura para permitir una segunda línea dentro de la misma celda
+  const cellHeight = 40
   const padding = 10
   const headers = ['Organismo Aprehensor', 'Detenciones']
   
@@ -103,7 +102,7 @@ export async function createTemplate(org, rangoFechas){
     drawHeaderFooter(page, p)
 
     // Encabezados
-    let currentY = 570
+    let currentY = 550
     let currentX = tableX
     headers.forEach((header, index) => {
       page.drawRectangle({
@@ -128,36 +127,82 @@ export async function createTemplate(org, rangoFechas){
     const endIdx = Math.min(startIdx + rowsPerPage, reg.length)
     for (let i = startIdx; i < endIdx; i++) {
       let currentX = tableX
+
+      const orgText = (reg[i].org || '').toUpperCase()
+      const delitosText = String(reg[i].delitos || '')
+
+      // Wrapping for delitosText to fit inside the column
+      const wrapFontSize = 10
+      const wrapMaxWidth = colWidths[0] - padding * 2
+      const words = delitosText.split(/\s+/).filter(Boolean)
+      const lines = []
+      let line = ''
+      for (let w = 0; w < words.length; w++) {
+        const test = line ? line + ' ' + words[w] : words[w]
+        const testWidth = regularFont.widthOfTextAtSize(test, wrapFontSize)
+        if (testWidth <= wrapMaxWidth) {
+          line = test
+        } else {
+          if (line) lines.push(line)
+          // if single word longer than maxWidth, we still push it (it will overflow)
+          line = words[w]
+        }
+      }
+      if (line) lines.push(line)
+
+      // Calculate dynamic row height: top org line + gap + wrapped lines + padding
+      const orgLineHeight = 12
+      const lineGap = 4
+      const wrappedHeight = lines.length * (wrapFontSize + 2)
+      const rowHeight = Math.max(cellHeight, orgLineHeight + lineGap + wrappedHeight + padding)
+
+      // Draw cell rectangle with dynamic height
       page.drawRectangle({
         x: currentX,
         y: currentY,
         width: colWidths[0],
-        height: cellHeight,
+        height: rowHeight,
         borderColor: rgb(0, 0, 0),
         borderWidth: 1,
       })
-      page.drawText(reg[i].org.toUpperCase(), {
+
+      // Draw organismo (top of cell)
+      page.drawText(orgText, {
         x: currentX + padding,
-        y: currentY + (cellHeight / 2) - (12 / 2),
+        y: currentY + rowHeight - orgLineHeight - 4,
         size: 11,
         font: regularFont,
       })
+
+      // Draw wrapped delitos lines below organismo
+      let ly = currentY + rowHeight - orgLineHeight - lineGap - wrapFontSize
+      for (let li = 0; li < lines.length; li++) {
+        page.drawText(lines[li], { x: currentX + padding, y: ly, size: wrapFontSize, font: regularFont, maxWidth: wrapMaxWidth })
+        ly -= (wrapFontSize + 2)
+      }
+
       currentX += colWidths[0]
+
+      // Second column (detenciones) - vertically center based on rowHeight
       page.drawRectangle({
         x: currentX,
         y: currentY,
         width: colWidths[1],
-        height: cellHeight,
+        height: rowHeight,
         borderColor: rgb(0, 0, 0),
         borderWidth: 1,
       })
-      page.drawText(reg[i].det.toString(), {
+      const detText = reg[i].det != null ? reg[i].det.toString() : ''
+      const detY = currentY + (rowHeight / 2) - (12 / 2)
+      page.drawText(detText, {
         x: currentX + padding,
-        y: currentY + (cellHeight / 2) - (12 / 2),
+        y: detY,
         size: 12,
         font: regularFont,
       })
-      currentY -= cellHeight
+
+      // Move down by the dynamic row height
+      currentY -= rowHeight
     }
   }
 

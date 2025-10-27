@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
-import { updateOrg } from '../service/OrgService.js';
+import { updateOrg } from '../service/orgService.js';
 import { useToast } from "primevue/usetoast";
 import {validateForm } from '../utils.js';
 import * as yup from 'yup';

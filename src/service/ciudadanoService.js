@@ -48,6 +48,7 @@ export async function saveCiudadano(ciudadano){
 }
 
 export async function saveDelitoCiudadano(delito){
+    console.log('delito a guardar:', delito)
     try{    
         const {data} = await axios.post(`${config.apiBaseUrl}/api/ciudadanos/createDelitoCiudadano`,delito, {
             headers:{
