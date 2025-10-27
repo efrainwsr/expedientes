@@ -82,10 +82,12 @@ router.post('/createCiudadano', async (req, res) =>{
     //console.log(req.body, "EN ROUTER CREATE ciudadano")
     
     const schemaCreateCiudadano = Joi.object({
+        id_ciudadano: Joi.any().optional(),
         cedula: Joi.number().required(),
         nombres: Joi.string().required().max(255),
         apellidos: Joi.string().required().max(255),
-        alias: Joi.string().required().max(50),
+        //alias: Joi.string().required().max(50),
+        alias: Joi.any().optional(),
         prefijo_nac: Joi.string().required().max(50),
         fecha_nacimiento: Joi.string().required().max(10),
         sexo: Joi.string().required().max(1),

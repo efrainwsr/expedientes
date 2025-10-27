@@ -6,6 +6,17 @@ require('dotenv').config();
 const serverUrl = 'http://192.168.0.39:5173/'
 const app = express();
 
+// Log full warning stack traces (helps locate circular dependency warnings)
+process.on('warning', (warning) => {
+  try {
+    console.warn('Node warning:', warning.name);
+    console.warn(warning.message);
+    console.warn(warning.stack);
+  } catch (e) {
+    console.warn('Warning emitted:', warning);
+  }
+});
+
 const corsOptions = {
   origin: '*', // Reemplaza con la URL correcta de tu frontend
   credentials: true,
@@ -31,9 +42,7 @@ const bandasRoutes = require('./routes/bandas.js');
 const validToken = require('./routes/middlewares/verify-token.js');
 const ubicacionRoutes = require('./routes/ubicacion.js');
 const ciudadanosRoutes = require('./routes/ciudadanos.js');
-
-
-
+const reportesRoutes = require('./routes/reportes.js');
 
 
 
@@ -45,6 +54,7 @@ app.use('/api/delitos', validToken, delitosRoutes);
 app.use('/api/bandas', validToken, bandasRoutes);
 app.use('/api/ubicacion', validToken, ubicacionRoutes);
 app.use('/api/ciudadanos', validToken, ciudadanosRoutes);
+app.use('/api/reportes', validToken, reportesRoutes);
 
 
 app.get('/', (req, res) => {

@@ -76,8 +76,8 @@ async function getCiudadano(data){
 
 async function getDelitosCiudadano(data){
   try {
-    const [results, fields] = await conn.execute('SELECT delc.expediente, delc.fecha_detencion, delc.observaciones, del.nombre as nombre_delito, del.descripcion as delito_desc, org.siglas as org_siglas, org.nombre as org_nombre, u.nombre as u_nombre, u.apellido as u_apellido, u.cedula as u_cedula, u.username as u_username FROM delitos_ciudadanos as delc INNER JOIN ciudadano c ON c.id_ciudadano = delc.id_ciudadano INNER JOIN delitos del ON del.id_delito = delc.id_delito INNER JOIN usuarios u ON u.id_usuario = delc.id_usuario_registro INNER JOIN organismos org ON org.id_organismo = delc.id_organismo WHERE delc.id_ciudadano = ?', [data]);
-    console.log(results, "EN GET DELITOS CIUDADANO")
+    const [results, fields] = await conn.execute('SELECT delc.expediente, delc.fecha_detencion, delc.observaciones, del.nombre as nombre_delito, del.descripcion as delito_desc, delc.lugar_detencion, delc.fecha_registro, org.siglas as org_siglas, org.nombre as org_nombre, u.nombre as u_nombre, u.apellido as u_apellido, u.cedula as u_cedula, u.username as u_username FROM delitos_ciudadanos as delc INNER JOIN ciudadano c ON c.id_ciudadano = delc.id_ciudadano INNER JOIN delitos del ON del.id_delito = delc.id_delito INNER JOIN usuarios u ON u.id_usuario = delc.id_usuario_registro INNER JOIN organismos org ON org.id_organismo = delc.id_organismo WHERE delc.id_ciudadano = ?', [data]);
+    //console.log(results, "EN GET DELITOS CIUDADANO")
     if(results.length < 1){
       return false
     }
