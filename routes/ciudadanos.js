@@ -12,6 +12,16 @@ router.post('/buscarCiudadano', async (req, res) => {
     
 })
 
+
+router.post('/buscarCedulaExpediente', async (req, res) =>{
+    const trimmedExpediente = req.body.expediente.trim();
+
+    res.json({
+        error: false,
+        data: await queries.getCedulaExpediente(req.body.expediente)
+    })
+});
+
 router.post('/getDelitosCiudadano', async (req, res) => {
     const result = await queries.getDelitosCiudadano(req.body.id_ciudadano);
     
@@ -76,8 +86,6 @@ router.post('/createDelitoCiudadano', async (req, res) =>{
 })
 
 
-
-
 router.post('/createCiudadano', async (req, res) =>{
     //console.log(req.body, "EN ROUTER CREATE ciudadano")
     
@@ -91,7 +99,7 @@ router.post('/createCiudadano', async (req, res) =>{
         prefijo_nac: Joi.string().required().max(50),
         fecha_nacimiento: Joi.string().required().max(10),
         sexo: Joi.string().required().max(1),
-        telefono: Joi.string().required().max(15),
+        telefono: Joi.any().optional(),
         id_banda: Joi.number().required(),
         id_estado: Joi.number().required(),
         id_municipio: Joi.number().required(),

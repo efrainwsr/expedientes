@@ -59,8 +59,9 @@ router.post('/login', async (req, res) => {
 
   // Create token
   const token = jwt.sign({
-    name: userCredentials[0].nombre,
-    user: userCredentials[0].username
+    user: userCredentials[0].username,
+    roles: userCredentials[0].roles,
+    status: userCredentials[0].activo
   }, process.env.TOKEN_SECRET);
 
 
@@ -72,8 +73,8 @@ router.post('/login', async (req, res) => {
     apellido: userCredentials[0].apellido,
     roles: [userCredentials[0].roles],
     status: userCredentials[0].activo,
-    fechaCreacion: userCredentials[0].fecha_creacion,
-    ultimoLogin: userCredentials[0].ultimo_login
+    /*fechaCreacion: userCredentials[0].fecha_creacion,
+    ultimoLogin: userCredentials[0].ultimo_login*/
   }
 
 
