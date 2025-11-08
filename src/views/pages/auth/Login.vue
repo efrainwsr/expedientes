@@ -20,18 +20,12 @@ const login = async () => {
         const res = await axios.post(`${config.apiBaseUrl}/api/auth/login`, {
             usuario: user.value,
             pwd: password.value
-
         });
 
-        console.log(res)
-    
         // Manejar la respuesta, por ejemplo, almacenar el token en localStorage
         saveToken(res.data.token);
         saveUserInfo(res.data.user)
-        //router.push('/dashboard')
-        //window.alert(`Bienvenido ${res.data.user.nombre}`)
         router.push('/dashboard');
-        //console.log(res)
         // Redirigir a otra página o actualizar el estado de la aplicación
     } catch (err) {
         // Manejar errores de forma adecuada
@@ -53,7 +47,7 @@ const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
 });*/
 
-const mainLogo = '../../../../public/main-logo.png'
+const mainLogo = '../../../../public/main-logo.png' || '';
 
 </script>
 

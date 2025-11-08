@@ -12,7 +12,7 @@ import { getCurrentInstance } from 'vue';
 const fileupload = ref(null);
 
 import Buscador from '../components/Buscador.vue';
-import { saveCiudadano, buscarCiudadano, saveDelitoCiudadano, getDelitosCiudadano } from '../service/ciudadanoService.js';
+import { saveCiudadano, buscarCiudadano, saveDelitoCiudadano, getDelitosCiudadano, buscarCedulaExpediente } from '../service/ciudadanoService.js';
 import { getAllDelitos } from '../service/delitosService.js';
 import { getEstados, getMunicipios, getParroquias } from '../service/ubicacionService.js';
 import { getAllBandas } from '../service/bandasService.js';
@@ -158,7 +158,7 @@ const ciudadanoSchema = yup.object({
     prefijo_nac: yup.string().max(1).required('La nacionalidad es obligatoria'),
     fecha_nacimiento: yup.string().required('La fecha de nacimiento es obligatoria'),
     sexo: yup.string().max(1).required('El sexo es obligatorio'),
-    telefono: yup.string().max(15).required('El teléfono es obligatorio'),
+    telefono: yup.string().max(15),
     id_banda: yup.number().required('La banda es obligatoria'),
     id_estado: yup.number().required('El estado es obligatorio'),
     id_municipio: yup.number().required('El municipio es obligatorio'),
@@ -247,7 +247,8 @@ const buscarCne = async () =>{
     console.log(res.json())
 }
 
-const buscar = {cedula: 14509013, nombre: '', expediente: ''};
+const buscar = {cedula: 14509013, nombre: '', expediente: 'k-15-2054pto'};
+
 
 
 const ciudadanoModel = ref(
@@ -295,9 +296,9 @@ const buscarCiudadanos = async (cedula) => {
     }
 }
 
-const buscarExpediente = async (cedula) => {
-    if(cedula){
-        const data = await buscarCiudadano(cedula);
+const buscarExpediente = async (exp) => {
+    if(exp){
+        const data = await buscarCedulaExpediente(exp);
         if(data.data === false){
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró el ciudadano.', life: 3000 });
             return;
@@ -306,14 +307,7 @@ const buscarExpediente = async (cedula) => {
             toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
             return;
         }
-        
-        ciudadanoModel.value = data.data[0];
-        delitoModel.value.id_ciudadano = data.data[0].id_ciudadano
-        cedulaDisabled.value = true;
-        ciudadanoEncontrado.value = true;
-        isDisabled.value = true;
-        //Buscar y asginar los delitos a variable local delitosCiudadanos
-        await buscarDelitosCiudadanos(data.data[0].id_ciudadano)
+       buscarCiudadanos(data.data[0].cedula);
     }else{
         toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
         return;
@@ -424,10 +418,8 @@ const sendDelito = async () => {
         }else{
             toast.add({ severity: 'success', summary: 'Operacion exitosa.', detail: 'Delito registrado.', life: 3000 });
             delitoModel.value = {id_ciudadano: ciudadanoModel.value.id_ciudadano, id_usuario_registro: resenador.id ,expediente: "", fecha_detencion: "", lugar_detencion:"", id_organismo:"", id_delito:"", observaciones:""};
-            //console.log("PROBANDO", ciudadanoModel.value.id_ciudadano)
             await buscarDelitosCiudadanos(ciudadanoModel.value.id_ciudadano) 
         }
-        //console.log(data);
     }
 }
 
@@ -473,14 +465,31 @@ const sendDelito = async () => {
         </div>
         
         <div class="col-12 md:col-4">
-            <Buscador
-            titulo="Buscar expediente"
-            placeholder=""
-            botonLabel="Buscar"
-            inputId="busquedaExpediente"
-            @buscar="buscarExpediente"
-            />
-        </div>
+            <div class="card">
+                <h5>Buscar por Expediente</h5>
+                <form @submit.prevent="buscarExpediente(buscar.expediente)" >
+                    <div class="p-fluid formgrid grid">
+                        <div class="field col-7 md:col-7">
+                            <InputText
+                            id="expedienteBUscar"
+                            v-model="buscar.expediente"
+                            placeholder=""
+                            />
+                        </div>
+                        <div class="field col-5 md:col-5">
+                            <Button
+                            @click=" buscarExpediente(buscar.expediente)"
+                            class="p-button-success"
+                            label="Buscar"
+                            icon="pi pi-search"
+                            />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> 
+
+
     </div>
     
     <div v-if="true"  class="grid"> 

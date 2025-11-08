@@ -80,7 +80,7 @@ export async function pdfCiudadano(cedula){
   const posLogo = { x: pageWidth - logoSize - 20, y: pageHeight - logoSize - 20 }
   const subtitleText = 'ANTECEDENTES POLICIALES'
   const subtitleCicpc = 'CUERPO DE INVESTIGACIONES CIENTÍFICAS, PENALES Y CRIMINALÍSTICAS'
-  const subtitleDelegacion = 'DELEGACIÓN MUNICIPAL GUAYANA'
+  const subtitleDelegacion = 'DELEGACIÓN MUNICIPAL CIUDAD GUAYANA'
   const subtitleSize = 12
   
   const footerText = 'Sistema integrado de reseñas internas para detenidos'
@@ -92,7 +92,7 @@ export async function pdfCiudadano(cedula){
 
     //Header, emision y logo
     const now = `EMISIÓN: ${fechaActualhhmm()}`
-    page.drawText(now, { x: 50, y: pageHeight - 35, size: 6, font: regularFont })
+    page.drawText(now, { x: 40, y: pageHeight - 35, size: 6, font: regularFont })
     page.drawImage(image, { x: posLogo.x, y: posLogo.y, width: logoSize, height: logoSize })
 
     
@@ -145,47 +145,47 @@ export async function pdfCiudadano(cedula){
 
   // Datos del ciudadano - ajusta campos según ciudadanoData
   let y = 500
-  const leftX = 60
+  const leftX = 40
 
   //FOTO DEL CIUDADANO
   firstPage.drawImage(foto, { x: leftX, y: y, width: foto.width *0.2, height: foto.height *0.2 })
   y -= 35
 
-  firstPage.drawText(`DATOS PERSONALES`, { x: leftX, y: y, size: 12, font: boldFont })
+  firstPage.drawText(`DATOS PERSONALES`, { x: leftX, y: y, size: 11, font: boldFont })
   y -= 22
-  firstPage.drawText(`CEDULA: ${ciudadanoData.cedula || ''}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`CEDULA: ${ciudadanoData.cedula || ''}`, { x: leftX, y: y, size: 11, font: regularFont })
   y -= 20
-  firstPage.drawText(`NOMBRES: ${(ciudadanoData.nombres || '').toUpperCase()}`, { x: centrarTexto(ciudadanoData.nombres || '', regularFont, 12)+15, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`NOMBRES: ${(ciudadanoData.nombres || '').toUpperCase()}`, { x: centrarTexto(ciudadanoData.nombres || '', regularFont, 11)+15, y: y, size: 11, font: regularFont })
   //y -= 18
-  firstPage.drawText(`APELLIDOS: ${ciudadanoData.apellidos.toUpperCase() || ''}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`APELLIDOS: ${ciudadanoData.apellidos.toUpperCase() || ''}`, { x: leftX, y: y, size: 11, font: regularFont })
   y -= 18
-  firstPage.drawText(`FECHA DE NACIMIENTO: ${ciudadanoData.fecha_nacimiento || ''}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`FECHA DE NACIMIENTO: ${ciudadanoData.fecha_nacimiento || ''}`, { x: leftX, y: y, size: 11, font: regularFont })
   y -= 18
-  firstPage.drawText(`ALIAS: ${(ciudadanoData.alias || 'No posee.').toUpperCase()}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`ALIAS: ${(ciudadanoData.alias || 'No posee.').toUpperCase()}`, { x: leftX, y: y, size: 11, font: regularFont })
   y -= 18
   const sexoText = (ciudadanoData.sexo || '').toString().toUpperCase() === 'M' ? 'MASCULINO' : ((ciudadanoData.sexo || '').toString().toUpperCase() === 'F' ? 'FEMENINO' : '')
-  firstPage.drawText(`SEXO: ${sexoText}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`SEXO: ${sexoText}`, { x: leftX, y: y, size: 11, font: regularFont })
   y -= 35
 
 
-  firstPage.drawText(`DATOS DE UBICACIÓN`, { x: leftX, y: y, size: 12, font: boldFont })
+  firstPage.drawText(`DATOS DE UBICACIÓN`, { x: leftX, y: y, size: 11, font: boldFont })
   y-= 22
 
-  /*firstPage.drawText(`ESTADO: ${dir.estado || ''}`, {  x: leftX, y: y, size: 12, font: regularFont })
+  /*firstPage.drawText(`ESTADO: ${dir.estado || ''}`, {  x: leftX, y: y, size: 11, font: regularFont })
    y -= 18
-  firstPage.drawText(`MUNICIPIO: ${dir.municipio || ''}`, {  x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`MUNICIPIO: ${dir.municipio || ''}`, {  x: leftX, y: y, size: 11, font: regularFont })
    y -= 18
-  firstPage.drawText(`PARROQUIA: ${dir.parroquia || ''}`, {  x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`PARROQUIA: ${dir.parroquia || ''}`, {  x: leftX, y: y, size: 11, font: regularFont })
    y -= 18
-  firstPage.drawText(`TELÉFONO: ${ciudadanoData.telefono || ''}`, { x: leftX, y: y, size: 12, font: regularFont })*/
+  firstPage.drawText(`TELÉFONO: ${ciudadanoData.telefono || ''}`, { x: leftX, y: y, size: 11, font: regularFont })*/
 
-  firstPage.drawText(`ESTADO: ${dir.estado || ''}`, {  x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`ESTADO: ${dir.estado || ''}`, {  x: leftX, y: y, size: 11, font: regularFont })
 
-  firstPage.drawText(`MUNICIPIO: ${dir.municipio || ''}`, {  x: leftX+140, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`MUNICIPIO: ${dir.municipio || ''}`, {  x: leftX+120, y: y, size: 11, font: regularFont })
 
-  firstPage.drawText(`PARROQUIA: ${dir.parroquia || ''}`, {  x: leftX+320, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`PARROQUIA: ${dir.parroquia || ''}`, {  x: leftX+345, y: y, size: 11, font: regularFont })
   y -= 18
-  firstPage.drawText(`TELÉFONO: ${ciudadanoData.telefono || ''}`, { x: leftX, y: y, size: 12, font: regularFont })
+  firstPage.drawText(`TELÉFONO: ${ciudadanoData.telefono || 'Sin telefono'}`, { x: leftX, y: y, size: 11, font: regularFont })
 
 
 
@@ -194,7 +194,7 @@ export async function pdfCiudadano(cedula){
 
   // Si no hay delitos, indicarlo y terminar
   if (delitos.length === 0) {
-    firstPage.drawText('SIN DELITOS REGISTRADOS.', { x: leftX, y: y - 35, size: 14, font: boldFont })
+    firstPage.drawText('SIN DELITOS REGISTRADOS.', { x: leftX, y: y - 50, size: 12, font: boldFont })
   } else {
     // Mostraremos cada delito en un bloque (varias líneas) con separación considerable.
     // Definir área disponible para contenido (máximo y mínimo Y)
@@ -212,9 +212,9 @@ export async function pdfCiudadano(cedula){
     for (let p = 0; p < totalDelPagesBlocks; p++) {
       const page = pdfDoc.addPage([pageWidth, pageHeight])
 
-      page.drawText(`CIUDADANO: ${ciudadanoData.nombres.toUpperCase()} ${ciudadanoData.apellidos.toUpperCase()} `, { x: leftX, y: 650, size: 12, font: boldFont })
-      page.drawText(`C.I: ${ciudadanoData.cedula}`, { x: leftX, y: 632, size: 12, font: boldFont })
-      page.drawText(`DELITOS ASOCIADOS: ${delitosData.length}`, { x: leftX, y: 614, size: 12, font: boldFont })
+      page.drawText(`CIUDADANO: ${ciudadanoData.nombres.toUpperCase()} ${ciudadanoData.apellidos.toUpperCase()} `, { x: leftX, y: 650, size: 11, font: boldFont })
+      page.drawText(`C.I: ${ciudadanoData.cedula}`, { x: leftX, y: 632, size: 11, font: boldFont })
+      page.drawText(`DELITOS ASOCIADOS: ${delitosData.length}`, { x: leftX, y: 614, size: 11, font: boldFont })
 
 
 
@@ -228,7 +228,7 @@ export async function pdfCiudadano(cedula){
       for (let i = startIdx; i < endIdx; i++) {
         const d = delitos[i]
   // Dibujar un rectángulo de fondo suave opcional (cubre todo el bloque)
-  page.drawRectangle({ x: leftX - 6, y: currentY - blockHeight + 23, width: pageWidth - (leftX * 2) + 12, height: blockHeight - 12, color: rgb(0.98, 0.98, 0.98) })
+  page.drawRectangle({ x: leftX - 6, y: currentY - blockHeight + 23, width: pageWidth - (leftX * 2) + 11, height: blockHeight - 11, color: rgb(0.98, 0.98, 0.98) })
 
         // Líneas del bloque
         const lineSize = 11
