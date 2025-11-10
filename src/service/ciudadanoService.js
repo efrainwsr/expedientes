@@ -30,6 +30,22 @@ export async function buscarCiudadano(cedula){
     }
 }
 
+export async function buscarNombre(nombre){
+    try{    
+        const {data} = await axios.post(`${config.apiBaseUrl}/api/ciudadanos/buscarNombre`,{nombre: nombre}, {
+            headers:{
+                'auth-token': localStorage.getItem('token')
+            }
+        })
+
+        console.log(nombre, "EN SERVICE BUSCAR NOMBRE")
+        return data      
+    }catch(err){
+        return err.response.data;
+        console.log(err)
+    }
+}
+
 export async function buscarCedulaExpediente(expediente){
     try{    
         const {data} = await axios.post(`${config.apiBaseUrl}/api/ciudadanos/buscarCedulaExpediente`,{expediente: expediente}, {

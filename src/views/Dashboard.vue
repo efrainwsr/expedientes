@@ -5,19 +5,21 @@ import { useToast } from "primevue/usetoast";
 const toast = useToast();
 const personIcon = ('src/assets/person-icon.svg');
 import * as yup from 'yup';
-import {config, validateForm, resizeImage, imgToBase64, compressImg, formatDate} from '../utils.js'
+import {validateForm, resizeImage, formatDate} from '../utils.js'
 import { pdfCiudadano } from '../reportes/pdfCiudadano.js';
+import DataTable from 'primevue/datatable';
 
-import { getCurrentInstance } from 'vue';
+
 const fileupload = ref(null);
 
-import Buscador from '../components/Buscador.vue';
-import { saveCiudadano, buscarCiudadano, saveDelitoCiudadano, getDelitosCiudadano, buscarCedulaExpediente } from '../service/ciudadanoService.js';
+
+import { saveCiudadano, buscarCiudadano, saveDelitoCiudadano, getDelitosCiudadano, buscarCedulaExpediente, buscarNombre } from '../service/ciudadanoService.js';
 import { getAllDelitos } from '../service/delitosService.js';
 import { getEstados, getMunicipios, getParroquias } from '../service/ubicacionService.js';
 import { getAllBandas } from '../service/bandasService.js';
 import { getAllOrg } from '../service/orgService.js';
 const modalVisible = ref(false);
+const modalBuscarNombre = ref(false);
 const ciudadanoEncontrado = ref(false);
 
 const { isDarkTheme } = useLayout();
@@ -95,6 +97,7 @@ isDarkTheme,
 );
 
 
+
 const delitosCiudadano = ref([]);
 
 
@@ -149,6 +152,8 @@ const resetForm = () => {
     cedulaDisabled.value = false;
     ciudadanoEncontrado.value = false;
 };
+
+const ciudadanosPorNombre = ref();
 
 const ciudadanoSchema = yup.object({
     cedula: yup.string().max(8).required('La cédula es obligatoria'),
@@ -242,12 +247,12 @@ const buscarParroquia = async (event) => {
 
 
 
-const buscarCne = async () =>{
+/*const buscarCne = async () =>{
     const res = await fetch(`https://api.cedula.com.ve/api/v1?app_id=1075&token=499a64a32fdcb13b03869b70cee3ce0d&nacionalidad=V&cedula=${ciudadanoModel.value.cedula}`)
     console.log(res.json())
-}
+}*/
 
-const buscar = {cedula: 14509013, nombre: '', expediente: 'k-15-2054pto'};
+const buscar = {cedula: 14509013, nombre: 'jose', expediente: 'k-15-2054pto'};
 
 
 
@@ -296,6 +301,7 @@ const buscarCiudadanos = async (cedula) => {
     }
 }
 
+//BUSCAR UN CIUDADANO POR NUMERO DE EXPEDIENTE ASOCIADO
 const buscarExpediente = async (exp) => {
     if(exp){
         const data = await buscarCedulaExpediente(exp);
@@ -307,9 +313,28 @@ const buscarExpediente = async (exp) => {
             toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
             return;
         }
-       buscarCiudadanos(data.data[0].cedula);
+        buscarCiudadanos(data.data[0].cedula);
     }else{
         toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar una cédula válida.', life: 3000 });
+        return;
+    }
+}
+
+const buscarCiudadanoNombre = async (nombre) => {
+    if(nombre && nombre.length >= 3 && typeof nombre === 'string'){
+        const data = await buscarNombre(nombre);
+        if(data.data === false){
+            toast.add({ severity: 'error', summary: 'Error', detail: 'No se encontró coincidencia.', life: 3000 });
+            return;
+        }
+        if(data.error){
+            toast.add({ severity: 'error', summary: 'Error', detail: data.message, life: 3000 });
+            return;
+        }
+        ciudadanosPorNombre.value = data.data;
+        modalBuscarNombre.value = true;
+    }else{
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Debe ingresar un nombre valido.', life: 3000 });
         return;
     }
 }
@@ -324,29 +349,6 @@ const buscarDelitosCiudadanos = async (id_ciudadano) =>{
     }
     return 
 }
-
-
-const buscarNombre = async (valor) => {
-    
-    //const res = await fetch('demo/data/ciudadanos.json');
-    const ciudadanoData =  listaCiudadanos;//await res.json();
-    
-    //busquedaRealizada.value = true; // Indicamos que se ha iniciado una búsqueda
-    const nombreNormalizado = valor.trim().toUpperCase(); // Normalizamos la cédula para una búsqueda precisa
-    // Usamos el método .find() para buscar el ciudadano por su cédula
-    const encontrado = ciudadanoData.find(
-    (ciudadano) => ciudadano.nombres.toUpperCase() === nombreNormalizado
-    );
-    // Asignamos el resultado a la referencia reactiva
-    if (encontrado) {
-        ciudadanoModel.value = encontrado;
-        // Opcional: Para ver el objeto puro en la consola sin el Proxy de Vue
-        //console.log("Ciudadano encontrado:", JSON.parse(JSON.stringify(encontrado)));
-    } else {
-        ciudadanoModel.value = null; // Si no se encuentra, limpiamos el valor anterior
-       //console.log(`No se encontró ningún ciudadano con la cédula: ${nombreNormalizado}`);
-    }
-};
 
 // ****** Funcion para procesar las fotos *********
 // ****** Captura y convierte la imagen seleccionada en base64 usando la referencia de FileUpload****
@@ -368,9 +370,6 @@ const upload = async () => {
         toast.add({ severity: 'info', summary: 'Sin foto', detail: 'No se subió ninguna imagen. El registro se guardará sin foto.', life: 3000 });
     }
 };
-
-
-
 
 const sendCiudadano = async () => {
     const validationResult = await validateForm(ciudadanoSchema, ciudadanoModel.value);
@@ -455,14 +454,29 @@ const sendDelito = async () => {
         </div> 
         
         <div class="col-12 md:col-4">
-            <Buscador
-            titulo="Buscar por nombre"
-            placeholder=""
-            botonLabel="Buscar"
-            inputId="busquedaNombre"
-            @buscar="buscarNombre"
-            />
-        </div>
+            <div class="card">
+                <h5>Buscar por Nombre</h5>
+                <form @submit.prevent="buscarCiudadanoNombre(buscar.nombre)" >
+                    <div class="p-fluid formgrid grid">
+                        <div class="field col-7 md:col-7">
+                            <InputText
+                            id="nombreBuscar"
+                            v-model="buscar.nombre"
+                            placeholder=""
+                            />
+                        </div>
+                        <div class="field col-5 md:col-5">
+                            <Button
+                            @click=" buscarCiudadanoNombre(buscar.nombre)"
+                            class="p-button-success"
+                            label="Buscar"
+                            icon="pi pi-search"
+                            />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div> 
         
         <div class="col-12 md:col-4">
             <div class="card">
@@ -488,8 +502,8 @@ const sendDelito = async () => {
                 </form>
             </div>
         </div> 
-
-
+        
+        
     </div>
     
     <div v-if="true"  class="grid"> 
@@ -506,7 +520,7 @@ const sendDelito = async () => {
                         
                         <div class="field col-12 md:col-2">
                             <label for="cedula">Cedula</label>
-                            <InputText @keyup.enter="buscarCne" :disabled="cedulaDisabled" v-model="ciudadanoModel.cedula" id="cedula" type="text"  placeholder="" :class="{ 'p-invalid': errors.cedula }" />
+                            <InputText  :disabled="cedulaDisabled" v-model="ciudadanoModel.cedula" id="cedula" type="text"  placeholder="" :class="{ 'p-invalid': errors.cedula }" />
                             <small v-if="errors.cedula" class="p-error">{{ errors.cedula }}</small>
                         </div>
                         
@@ -606,6 +620,53 @@ const sendDelito = async () => {
             </div>
         </div>
     </div>
+    
+    
+    <!------------------------------  MODAL DE BUSQUEDA POR NOMBRES DE CIUDADANOS --------------------------->
+<Dialog v-model:visible="modalBuscarNombre" modal header="BUSQUEDA DE CIUDADANO POR NOMBRE." :style="{ width: '60rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+        
+                        <DataTable :value="ciudadanosPorNombre" tableStyle="min-width: 40rem">
+                            <!--<template #header>
+                                <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <span class="text-xl text-900 font-bold">Products</span>
+                                    <Button icon="pi pi-refresh" rounded raised />
+                                </div>
+                            </template>-->
+                    
+                            <Column header="Foto">
+                                <template #body="slotProps">
+                                    <img :src="slotProps.data.foto || personIcon" :style="{ width: '1rem' }" class="w-6rem border-round" />
+                                </template>
+                            </Column>
+
+                            <Column field="cedula" header="Cedula"></Column>
+                            <Column field="nombres" header="Nombres"></Column>
+                            <Column field="apellidos" header="Apellidos"></Column>
+                            <Column field="alias" header="Alias"></Column>
+                            <Column header="Accion">
+                               <template #body="slotProps">
+                                    <Button label="Selec" @click="buscarCiudadanos(slotProps.data.cedula); modalBuscarNombre = false;" />
+                                </template>
+                            </Column>
+
+
+                           <!-- <Column header="Status">
+                                <template #body="slotProps">
+                                    <Tag :value="slotProps.data.inventoryStatus" :severity="getSeverity(slotProps.data)" />
+                                </template>
+                            </Column>-->
+
+                            <template #footer>Un total de {{ ciudadanosPorNombre ? ciudadanosPorNombre.length : 0 }} coincidencias</template>
+                        </DataTable>
+            
+        
+                
+        <!--<div class="flex justify-content-end gap-2">
+            <Button type="button" label="Cancel" severity="secondary" @click="modalBuscarNombre = false"></Button>
+            <Button type="button" label="Select" @click="modalBuscarNombre = false"></Button>
+        </div> -->
+    </Dialog>
+    <!------------------------------   ****************************************   --------------------------->
     
     <!------------------------------  MODAL DE DELITOS  --------------------------->
     
