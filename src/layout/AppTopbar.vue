@@ -32,7 +32,7 @@ const userInfo = onMounted(()=>{
 })
 
 const logoUrl = computed(() => {
-    return '../../../../public/main-logo.png'
+    return '../../../../public/main-logo.png' || '../../../../main-logo.png' || '';
 });
 
 const onTopBarMenuButton = () => {

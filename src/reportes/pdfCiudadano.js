@@ -78,7 +78,7 @@ export async function pdfCiudadano(cedula){
   
   //Header 
   const posLogo = { x: pageWidth - logoSize - 20, y: pageHeight - logoSize - 20 }
-  const subtitleText = 'ANTECEDENTES POLICIALES'
+  const subtitleText = 'REGISTROS POLICIALES INTERNOS'
   const subtitleCicpc = 'CUERPO DE INVESTIGACIONES CIENTÍFICAS, PENALES Y CRIMINALÍSTICAS'
   const subtitleDelegacion = 'DELEGACIÓN MUNICIPAL CIUDAD GUAYANA'
   const subtitleSize = 12

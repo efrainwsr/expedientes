@@ -1,0 +1,11 @@
+Options -MultiViews
+RewriteEngine On
+RewriteBase /sirid/
+
+# If the request matches an existing file or directory, serve it normally
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# All other requests should be handled by index.html (SPA fallback)
+RewriteRule ^ index.html [L]

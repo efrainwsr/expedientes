@@ -47,7 +47,7 @@ const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
 });*/
 
-const mainLogo = '../../../../public/main-logo.png' || '';
+const mainLogo = '../../../../public/main-logo.png' || '../../../../main-logo.png' || '' ;
 
 </script>
 
