@@ -76,7 +76,7 @@
     </DataTable>
     
     
-    <Dialog 
+<Dialog 
     v-model:visible="modalFechaReporte" 
     modal 
     header="Reporte de detenciones totales por organismo" 
@@ -118,6 +118,7 @@
         />
     </template>
 </Dialog>
+
 
 <Dialog 
     v-model:visible="modalGeneral" 
@@ -192,11 +193,11 @@ const errors = ref({});
 // Variables para el modal de fechas
 const modalGeneral = ref(false);
 const modalFechaReporte = ref(false);
-const selectedOrg = ref(null);
 const rangoFechas = ref({
     inicio: null,
     fin: null
 });
+const selectedOrg = ref(null);
 
 const fechaSchema = yup.object({
     inicio: yup.string().required('Fecha de inicio obligatoria'),
